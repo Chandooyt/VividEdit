@@ -11,7 +11,7 @@ import { useCallback, useRef, useState } from "react";
  *  3. No visual redesign — every colour, animation and glow is preserved.
  */
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = " https://registry.npmjs.org/ngrok/-";
 const DEFAULT_PROMPT =
   "Cut out dead air, remove stutters, and keep pacing aggressive.";
 
