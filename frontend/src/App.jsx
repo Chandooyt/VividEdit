@@ -124,13 +124,20 @@ export default function App() {
           <div className="drop-inner">
             {file ? (
               <>
-                <div className="drop-icon">🎬</div>
+                <video
+                  className="video-preview"
+                  src={URL.createObjectURL(file)}
+                  controls
+                />
+
                 <h2 className="drop-title">{file.name}</h2>
+
                 <p className="drop-sub">
                   {(file.size / (1024 * 1024)).toFixed(1)} MB · ready
                 </p>
               </>
             ) : (
+
               <>
                 <h2 className="drop-title">
                   <span className="drop-arrow">⬇</span> DRAG &amp; DROP
@@ -370,8 +377,18 @@ function Styles() {
         word-break: break-word;
       }
       .drop-sub  { margin: 0; color: #9aa0b5; letter-spacing: .08em; font-size: clamp(12px,1.6vw,14px); }
-      .drop-icon { font-size: clamp(34px,6vw,46px); filter: drop-shadow(0 0 12px var(--neon-cyan)); }
 
+      .video-preview {
+        width: 100%;
+        max-height: 220px;
+        border-radius: 12px;
+        object-fit: cover;
+        border: 2px solid rgba(34,211,238,.4);
+        box-shadow: 0 0 20px rgba(34,211,238,.2);
+      }
+
+      .drop-icon { font-size: clamp(34px,6vw,46px); filter: drop-shadow(0 0 12px var(--neon-cyan)); }
+      
       /* ── Terminal ── */
       .terminal-block { width: 100%; max-width: 660px; }
       .terminal-label {
