@@ -463,7 +463,7 @@ function Styles() {
           transform: rotate(360deg);
         }
       }
-        
+
       .status-msg {
         margin: 0;
         font-size: clamp(12px,1.5vw,14px);
