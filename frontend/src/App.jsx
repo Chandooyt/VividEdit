@@ -253,7 +253,6 @@ export default function App() {
         VIVID © 2026 • Built by Mohid Malik
       </footer>
 
-      <div className="corner-mark" aria-hidden="true">◆</div>
     </div>
   );
 }
@@ -609,17 +608,6 @@ function Styles() {
         color: #7d859d;
         font-size: 12px;
         letter-spacing: .08em;  
-      }
-
-      .corner-mark {
-        position: fixed;
-        right: clamp(16px,3vw,30px);
-        bottom: clamp(14px,3vw,26px);
-        z-index: 2;
-        color: #cfcfe6;
-        font-size: 20px;
-        opacity: .85;
-        filter: drop-shadow(0 0 8px rgba(255,255,255,.4));
       }
 
       /* ── Responsive ── */
