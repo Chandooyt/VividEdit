@@ -181,8 +181,17 @@ export default function App() {
         </button>
 
         {/* Inline status / error message */}
-        {statusMsg && (
-          <p className="status-msg">{statusMsg}</p>
+        {running && (
+          <div className="loader-wrap">
+            <div className="loader"></div>
+            <p className="loading-text">
+              AI is editing your video...
+            </p>
+          </div>
+        )}
+
+       {statusMsg && (
+         <p className="status-msg">{statusMsg}</p>
         )}
 
         {processedVideo && (
@@ -425,6 +434,36 @@ function Styles() {
       @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
 
       /* ── Status message ── */
+      .loader-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .loader {
+        width: 60px;
+        height: 60px;
+        border: 4px solid rgba(255,255,255,.15);
+        border-top: 4px solid #22d3ee;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        box-shadow: 0 0 20px rgba(34,211,238,.5);
+      }
+
+      .loading-text {
+        color: #22d3ee;
+        font-size: 14px;
+        letter-spacing: .08em;
+        text-shadow: 0 0 10px rgba(34,211,238,.5);
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+        
       .status-msg {
         margin: 0;
         font-size: clamp(12px,1.5vw,14px);
