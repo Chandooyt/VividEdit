@@ -416,7 +416,7 @@ function Styles() {
       .drop-title {
         margin: 0; font-family: 'Orbitron', sans-serif; font-weight: 700;
         letter-spacing: .12em; line-height: 1.25;
-        font-size: clamp(16px,2.4vw,22px); color: #f2f2f8;
+        font-size: clamp(13px,1.7vw,18px); color: #f2f2f8;
         text-shadow: 0 0 18px rgba(192,38,255,.35);
         word-break: break-word;
       }
