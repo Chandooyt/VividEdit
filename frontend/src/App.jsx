@@ -152,7 +152,7 @@ export default function App() {
                   controls
                 />
 
-                <h2 className="drop-title">{file.name}</h2>
+                <h2 className="video-file-title">{file.name}</h2>
 
                 <p className="drop-sub">
                   {(file.size / (1024 * 1024)).toFixed(1)} MB · ready
@@ -419,6 +419,25 @@ function Styles() {
         font-size: clamp(18px,2.8vw,30px); color: #f2f2f8;
         text-shadow: 0 0 18px rgba(192,38,255,.35);
         word-break: break-word;
+      }
+      .video-file-title {
+        margin: 0;
+
+        font-family: 'Orbitron', sans-serif;
+
+        font-weight: 700;
+
+        letter-spacing: .08em;
+
+        line-height: 1.2;
+
+        font-size: clamp(12px,1.4vw,16px);
+
+        color: #f2f2f8;
+
+        word-break: break-word;
+
+        text-align: center;
       }
       .drop-sub  { margin: 0; color: #9aa0b5; letter-spacing: .08em; font-size: clamp(12px,1.6vw,14px); }
 
