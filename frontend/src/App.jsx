@@ -23,6 +23,7 @@ export default function App() {
   const [running,    setRunning]      = useState(false);
   const [statusMsg,  setStatusMsg]    = useState("");   // shown beneath button
   const [processedVideo, setProcessedVideo] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   /* ── file helpers ── */
   const handleFiles = useCallback((fileList) => {
@@ -47,6 +48,7 @@ export default function App() {
   const runEngine = useCallback(async () => {
     if (running) return;
     setRunning(true);
+    setUploadProgress(0);
     setStatusMsg("⚙ Uploading & processing…");
     setProcessedVideo("");
 
@@ -58,9 +60,29 @@ export default function App() {
 
       // POST to FastAPI — do NOT set Content-Type manually;
       // the browser adds the correct multipart/form-data boundary.
-      const response = await fetch(`${API_URL}/upload`, {
-        method: "POST",
-        body:   formData,
+      const response = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+
+        xhr.open("POST", `${API_URL}/upload`);
+
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            setUploadProgress(percent);
+          }
+        };
+
+        xhr.onload = () => {
+          resolve({
+            ok: xhr.status >= 200 && xhr.status < 300,
+            status: xhr.status,
+            json: async () => JSON.parse(xhr.responseText),
+          });
+        };
+
+        xhr.onerror = () => reject(new Error("Upload failed"));
+
+        xhr.send(formData);
       });
 
       const json = await response.json();
@@ -188,6 +210,19 @@ export default function App() {
         </button>
 
         {/* Inline status / error message */}
+        {running && (
+          <div className="progress-wrap">
+            <div
+              className="progress-bar"
+              style={{ width: `${uploadProgress}%` }}
+            ></div>
+
+            <p className="progress-text">
+              Uploading: {uploadProgress}%
+            </p>
+          </div>
+        )}
+
         {running && (
           <div className="loader-wrap">
             <div className="loader"></div>
@@ -388,7 +423,7 @@ function Styles() {
       }
 
       .drop-icon { font-size: clamp(34px,6vw,46px); filter: drop-shadow(0 0 12px var(--neon-cyan)); }
-      
+
       /* ── Terminal ── */
       .terminal-block { width: 100%; max-width: 660px; }
       .terminal-label {
@@ -451,6 +486,32 @@ function Styles() {
       @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
 
       /* ── Status message ── */
+      .progress-wrap {
+        width: 100%;
+        max-width: 420px;
+        height: 14px;
+        background: rgba(255,255,255,.08);
+        border-radius: 999px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: inset 0 0 10px rgba(0,0,0,.4);
+      }
+
+      .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #c026ff, #22d3ee);
+        transition: width .25s ease;
+        box-shadow: 0 0 18px rgba(34,211,238,.5);
+      }
+
+     .progress-text {
+       text-align: center;
+       margin-top: 10px;
+       color: #22d3ee;
+       font-size: 13px;
+       letter-spacing: .08em;
+      }
+       
       .loader-wrap {
         display: flex;
         flex-direction: column;
