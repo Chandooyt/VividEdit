@@ -96,8 +96,13 @@ export default function App() {
 
       {/* ── Header — logo centred ── */}
       <header className="vivid-header">
-        <Logo />
-      </header>
+  <div className="header-content">
+    <Logo />
+    <p className="hero-text">
+      AI-powered dead air remover for creators.
+    </p>
+  </div>
+</header>
 
       {/* ── Main stage — centred column ── */}
       <main className="vivid-stage">
@@ -268,7 +273,21 @@ function Styles() {
         align-items: center;
       }
 
-      .logo { display: inline-flex; align-items: center; gap: 14px; }
+      .logo { display: inline-flex; align-items: center; gap: 14px; }.header-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-text {
+  margin: 0;
+  color: #9aa0b5;
+  font-size: 14px;
+  letter-spacing: .08em;
+  text-align: center;
+}
+  
       .logo-text {
         font-family: 'Orbitron', sans-serif; font-weight: 700;
         letter-spacing: .32em; font-size: clamp(20px,2.6vw,30px);
