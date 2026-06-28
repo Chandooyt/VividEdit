@@ -198,6 +198,10 @@ export default function App() {
      )}
       </main>
 
+      <footer className="vivid-footer">
+        VIVID © 2026 • Built by Mohid Malik
+      </footer>
+
       <div className="corner-mark" aria-hidden="true">◆</div>
     </div>
   );
@@ -454,6 +458,14 @@ function Styles() {
       }
 
       /* ── Corner mark ── */
+      .vivid-footer {
+        text-align: center;
+        padding: 20px;
+        color: #7d859d;
+        font-size: 12px;
+        letter-spacing: .08em;  
+      }
+
       .corner-mark {
         position: fixed;
         right: clamp(16px,3vw,30px);
