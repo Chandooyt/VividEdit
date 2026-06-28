@@ -320,27 +320,36 @@ function Styles() {
 
       /* ── Header — logo perfectly centred ── */
       .vivid-header {
-        position: relative; z-index: 2;
+        position: relative;
+        z-index: 2;
+
         width: 100%;
-        padding: clamp(18px,3vw,28px) clamp(20px,5vw,48px);
+
+        padding: 28px 40px;
+
         display: flex;
-        justify-content: center;   /* ← centres the logo */
-        align-items: center;
+
+        justify-content: flex-start;
+        align-items: flex-start;
       }
 
       .logo { display: inline-flex; align-items: center; gap: 14px; }.header-content {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 6px;
 }
 
 .hero-text {
   margin: 0;
+
   color: #9aa0b5;
+
   font-size: 14px;
+
   letter-spacing: .08em;
-  text-align: center;
+
+  text-align: left;
 }
   
       .logo-text {
@@ -366,8 +375,8 @@ function Styles() {
       .drop-zone {
         position: relative;
         width: 100%;
-        max-width: 360px;
-        aspect-ratio: 1 / 1;
+        max-width: 850px;
+        min-height: 340px; 
         border-radius: 22px;
         padding: 12px;
         cursor: pointer;
@@ -511,7 +520,7 @@ function Styles() {
        font-size: 13px;
        letter-spacing: .08em;
       }
-       
+
       .loader-wrap {
         display: flex;
         flex-direction: column;

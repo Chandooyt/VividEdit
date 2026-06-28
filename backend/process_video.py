@@ -161,8 +161,12 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
             "-t", str(duration),
 
             # Proper re-encode (fixes repeated clips)
-            "-c:v", "libx264",
-            "-c:a", "aac",
+           "-c:v", "libx264",
+           "-preset", "superfast",
+           "-crf", "28",
+           "-vf", "scale=1280:-2",
+
+           "-c:a", "aac",
 
             str(temp_path),
         ]
@@ -183,8 +187,12 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
         "-safe", "0",
         "-i", str(list_file),
 
-        "-c:v", "libx264",
-        "-c:a", "aac",
+       "-c:v", "libx264",
+       "-preset", "superfast",
+       "-crf", "28",
+       "-vf", "scale=1280:-2",
+
+       "-c:a", "aac",
 
         output_path,
     ]
