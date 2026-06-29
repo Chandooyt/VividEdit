@@ -73,7 +73,7 @@ async def upload_video(file: UploadFile = File(...)):
     if processing_result.get("success") and processing_result.get("output_path"):
         # Convert OS path to a forward-slash URL segment
         # e.g. "processed/video_vivid.mp4"  →  "processed/video_vivid.mp4"
-        processed_video = "/" + str(Path(processing_result["output_path"]).as_posix())
+        processed_video = f"/processed/{Path(processing_result['output_path']).name}"
 
     # ── 5. Return combined JSON response ────────────────────────
     return JSONResponse(
