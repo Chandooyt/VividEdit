@@ -27,22 +27,23 @@ import subprocess
 import sys
 from pathlib import Path
 
+from video_analyzer import analyze_video
+
 # ── Output folder ──────────────────────────────────────────────
 OUTPUT_DIR = Path("processed")
 OUTPUT_DIR.mkdir(exist_ok=True)   # creates processed/ automatically
 
 # ── Silence-detection tuning ───────────────────────────────────
 # Lower SILENCE_THRESHOLD  → detects quieter silences (more aggressive cuts)
-# Higher SILENCE_DURATION  → only removes longer pauses (less aggressive cuts)
 SILENCE_THRESHOLD = -20          # dB  — good default for talking-head audio
-SILENCE_DURATION  = 0.15          # seconds — ignore pauses shorter than this
-PAD_SECONDS       = 0.03         # tiny audio pad kept around each cut (feels natural)
-
 
 # ──────────────────────────────────────────────────────────────
 # 1.  DETECT SILENCE
 # ──────────────────────────────────────────────────────────────
-def detect_silence(input_path: str) -> list[dict]:
+def detect_silence(
+    input_path: str,
+    silence_duration: float
+) -> list[dict]:
     """
     Run FFmpeg's silencedetect filter and return a list of silent intervals.
 
@@ -51,7 +52,7 @@ def detect_silence(input_path: str) -> list[dict]:
     """
     cmd = [
         "ffmpeg", "-i", input_path,
-        "-af", f"silencedetect=noise={SILENCE_THRESHOLD}dB:d={SILENCE_DURATION}",
+        "-af", f"silencedetect=noise={SILENCE_THRESHOLD}dB:d={silence_duration}",
         "-f", "null", "-",          # no output file — we only want the log
     ]
 
@@ -89,6 +90,7 @@ def detect_silence(input_path: str) -> list[dict]:
 def build_keep_segments(
     silence_intervals: list[dict],
     total_duration: float,
+    pad_seconds: float,
 ) -> list[dict]:
     """
     Convert silent intervals into the segments we WANT TO KEEP.
@@ -100,13 +102,13 @@ def build_keep_segments(
     cursor = 0.0
 
     for silence in silence_intervals:
-        seg_end   = silence["start"] + PAD_SECONDS     # keep a tiny tail
+        seg_end   = silence["start"] + pad_seconds     # keep a tiny tail
         seg_start = cursor
 
         if seg_end > seg_start + 0.05:                 # skip micro-segments
             keep.append({"start": seg_start, "end": seg_end})
 
-        cursor = max(cursor, silence["end"] - PAD_SECONDS)   # next segment starts here
+        cursor = max(cursor, silence["end"] - pad_seconds)   # next segment starts here
 
     # Keep everything after the last silence until the end of the video
     if cursor < total_duration - 0.05:
