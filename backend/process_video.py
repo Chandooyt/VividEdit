@@ -243,13 +243,25 @@ def process_video(input_path: str) -> dict:
         total_duration = get_duration(input_path)
         print(f"[VIVID] Total duration : {total_duration:.2f}s")
 
-        # 2. Silence detection
+        # 2. AI Video Analysis
+        analysis = analyze_video(input_path)
+
+        video_type = analysis["video_type"]
+        profile = analysis["profile"]
+
+        silence_duration = profile["silence_duration"]
+        pad_seconds = profile["pad_seconds"]
+
+        print(f"[VIVID AI] Detected video type: {video_type}")
+        print(f"[VIVID AI] Using profile: {profile['label']}")
+
+        # 3. Silence detection
         silence_intervals = detect_silence(
             input_path,
             silence_duration,
         )
 
-        # 3. If no silence found, just copy the file as-is
+        # 4. If no silence found, just copy the file as-is
         if not silence_intervals:
             print("[VIVID] No silence detected — copying file unchanged.")
             import shutil
@@ -264,18 +276,18 @@ def process_video(input_path: str) -> dict:
                 "message":            "No silence detected. File copied unchanged.",
             }
 
-        # 4. Build keep-segments
+        # 5. Build keep-segments
         keep_segments = build_keep_segments(
             silence_intervals,
             total_duration,
             pad_seconds,
         )
 
-        # 5. Cut & join
+        # 6. Cut & join
         print(f"[VIVID] Cutting & joining {len(keep_segments)} segment(s)…")
         cut_and_join(input_path, keep_segments, output_path)
 
-        # 6. Measure output
+        # 7. Measure output
         processed_duration = get_duration(output_path)
         time_removed       = total_duration - processed_duration
 
