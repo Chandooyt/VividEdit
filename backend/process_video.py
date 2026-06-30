@@ -244,7 +244,10 @@ def process_video(input_path: str) -> dict:
         print(f"[VIVID] Total duration : {total_duration:.2f}s")
 
         # 2. Silence detection
-        silence_intervals = detect_silence(input_path)
+        silence_intervals = detect_silence(
+            input_path,
+            silence_duration,
+        )
 
         # 3. If no silence found, just copy the file as-is
         if not silence_intervals:
@@ -262,7 +265,11 @@ def process_video(input_path: str) -> dict:
             }
 
         # 4. Build keep-segments
-        keep_segments = build_keep_segments(silence_intervals, total_duration)
+        keep_segments = build_keep_segments(
+            silence_intervals,
+            total_duration,
+            pad_seconds,
+        )
 
         # 5. Cut & join
         print(f"[VIVID] Cutting & joining {len(keep_segments)} segment(s)…")
