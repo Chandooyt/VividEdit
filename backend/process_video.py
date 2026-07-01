@@ -211,7 +211,7 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
 # ──────────────────────────────────────────────────────────────
 # 5.  MAIN ENTRY-POINT  (used by FastAPI or CLI)
 # ──────────────────────────────────────────────────────────────
-def process_video(input_path: str) -> dict:
+def process_video(input_path: str, prompt: str = "") -> dict:
     """
     Full pipeline: detect silence → build keep-segments → cut & join.
 
@@ -242,6 +242,48 @@ def process_video(input_path: str) -> dict:
         # 1. Total duration
         total_duration = get_duration(input_path)
         print(f"[VIVID] Total duration : {total_duration:.2f}s")
+
+        # ── VIVID AI ANALYSIS ─────────────────────────
+        analysis = analyze_video(input_path)
+
+        profile = analysis["profile"]
+
+        video_type = analysis["video_type"]
+
+        # Default AI decisions
+        silence_duration = profile["silence_duration"]
+        pad_seconds = profile["pad_seconds"]
+
+        print(f"[VIVID AI] Detected type: {video_type}")
+
+        # ── OPTIONAL USER PROMPT ─────────────────────
+        if prompt:
+
+            print(f"[VIVID AI] User Prompt: {prompt}")
+
+            prompt_lower = prompt.lower()
+
+            # Fast / aggressive edits
+            if (
+                "fast" in prompt_lower
+                or "aggressive" in prompt_lower
+                or "tiktok" in prompt_lower
+                or "reels" in prompt_lower
+            ):
+                silence_duration = 0.2
+                pad_seconds = 0.03
+
+            # Natural / cinematic edits
+            elif (
+                "natural" in prompt_lower
+                or "cinematic" in prompt_lower
+                or "podcast" in prompt_lower
+            ):
+                silence_duration = 0.8
+                pad_seconds = 0.12
+
+        print(f"[VIVID AI] silence_duration={silence_duration}")
+        print(f"[VIVID AI] pad_seconds={pad_seconds}")
 
         # 2. AI Video Analysis
         analysis = analyze_video(input_path)

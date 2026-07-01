@@ -2,10 +2,12 @@ import os
 import shutil
 from pathlib import Path
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+
+from pydantic import BaseModel
 
 from process_video import process_video
 
@@ -29,6 +31,9 @@ app.add_middleware(
 # Accessing http://127.0.0.1:8000/processed/video_vivid.mp4 will stream the file.
 app.mount("/processed", StaticFiles(directory="processed"), name="processed")
 
+class Feedback(BaseModel):
+    rating: int
+
 
 # ── Routes ─────────────────────────────────────────────────────
 @app.get("/")
@@ -37,7 +42,10 @@ def root():
 
 
 @app.post("/upload")
-async def upload_video(file: UploadFile = File(...)):
+async def upload_video(
+    file: UploadFile = File(...),
+    prompt: str = Form("")
+):
 
     # ── 1. Validate file type ───────────────────────────────────
     if file.content_type not in ("video/mp4", "video/mpeg"):
@@ -63,7 +71,7 @@ async def upload_video(file: UploadFile = File(...)):
 
     # ── 3. Run FFmpeg silence-removal processor ─────────────────
     print(f"[VIVID] Starting processor for: {dest}")
-    processing_result = process_video(str(dest))
+    processing_result = process_video(str(dest), prompt)
     print(f"[VIVID] Processor result: {processing_result}")
 
     # ── 4. Build the download path the frontend will use ────────
@@ -92,6 +100,16 @@ async def upload_video(file: UploadFile = File(...)):
         },
     )
 
+@app.post("/feedback")
+async def save_feedback(data: Feedback):
+
+    with open("feedback.txt", "a") as f:
+        f.write(f"Rating: {data.rating}\n")
+
+    return {
+        "success": True
+    }
+    
 
 # ── Run ────────────────────────────────────────────────────────
 # Start with:  uvicorn main:app --reload

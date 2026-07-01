@@ -110,6 +110,33 @@ export default function App() {
     }
   }, [file, prompt, running]);
 
+
+
+const sendRating = async (rating) => {
+
+  try {
+
+    await fetch(`${API_URL}/feedback`, {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+      },
+
+      body: JSON.stringify({
+        rating,
+      }),
+    });
+
+    alert("Thanks for your feedback!");
+
+  } catch (err) {
+
+    console.error("Feedback error:", err);
+
+  }
+};
+
   return (
     <div className="vivid-root">
       <Styles />
@@ -182,7 +209,7 @@ export default function App() {
         {/* Terminal */}
         <section className="terminal-block">
           <label className="terminal-label" htmlFor="ai-prompt">
-            AI DIRECTOR TERMINAL
+            AI DIRECTOR TERMINAL (Optional)
           </label>
           <div className="terminal-box">
             <span className="terminal-caret">&gt; Enter prompt: [ "</span>
@@ -237,16 +264,38 @@ export default function App() {
         )}
 
         {processedVideo && (
-         <a
-          className="download-btn"
-          href={`${API_URL}${processedVideo}`}
-         download
-         target="_blank"
-         rel="noopener noreferrer"
-       >
-         ⬇ DOWNLOAD MP4
-       </a>
-     )}
+          <>
+            <a
+              className="download-btn"
+              href={`${API_URL}${processedVideo}`}
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              ⬇ DOWNLOAD MP4
+            </a>
+
+            {/* ⭐ Feedback System */}
+            <div className="feedback-box">
+              <h3 className="feedback-title">
+                How was your edit?
+              </h3>
+
+              <div className="feedback-stars">
+                {[1,2,3,4,5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => sendRating(star)}
+                    className="star-btn"
+                  >
+                    ⭐
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
       </main>
 
       <footer className="vivid-footer">
@@ -600,6 +649,53 @@ function Styles() {
       .download-btn:hover {
         transform: translateY(-2px);
       }
+
+      /* ⭐ FEEDBACK CSS START */
+.feedback-box {
+  margin-top: 24px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  gap: 12px;
+}
+
+.feedback-title {
+  color: #22d3ee;
+
+  font-size: 16px;
+
+  letter-spacing: .08em;
+
+  margin: 0;
+}
+
+.feedback-stars {
+  display: flex;
+
+  gap: 10px;
+}
+
+.star-btn {
+  background: transparent;
+
+  border: none;
+
+  cursor: pointer;
+
+  font-size: 32px;
+
+  transition: transform .2s ease;
+}
+
+.star-btn:hover {
+  transform: scale(1.2);
+}
+/* ⭐ FEEDBACK CSS END */
+
 
       /* ── Corner mark ── */
       .vivid-footer {
