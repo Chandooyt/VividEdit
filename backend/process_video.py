@@ -106,7 +106,7 @@ def build_keep_segments(
         seg_end   = silence["start"] + pad_seconds     # keep a tiny tail
         seg_start = cursor
 
-        if seg_end > seg_start + 0.05:                 # skip micro-segments
+        if seg_end > seg_start + 0.3:                 # skip micro-segments
             keep.append({"start": seg_start, "end": seg_end})
 
         cursor = max(cursor, silence["end"] - pad_seconds)   # next segment starts here
@@ -151,6 +151,9 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
         temp_path = OUTPUT_DIR / f"_tmp_seg_{i:04d}.mp4"
 
         duration = seg["end"] - seg["start"]
+
+        if duration < 0.3:
+            continue
 
         cmd = [
             "ffmpeg",
