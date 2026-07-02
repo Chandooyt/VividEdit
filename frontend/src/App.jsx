@@ -269,10 +269,8 @@ const sendRating = async (rating) => {
               className="download-btn"
               href={`${API_URL}${processedVideo}`}
               download
-              target="_blank"
-              rel="noopener noreferrer"
             >
-              ⬇ DOWNLOAD MP4
+                DOWNLOAD MP4
             </a>
 
             {/* ⭐ Feedback System */}
