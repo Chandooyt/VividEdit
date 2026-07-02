@@ -23,7 +23,12 @@ export default function App() {
   const [running,    setRunning]      = useState(false);
   const [statusMsg,  setStatusMsg]    = useState("");   // shown beneath button
   const [processedVideo, setProcessedVideo] = useState("");
+
   const [uploadProgress, setUploadProgress] = useState(0);
+
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+
+  const [downloading, setDownloading] = useState(false);
 
   const [selectedRating, setSelectedRating] = useState(0);
   const [sendingRating, setSendingRating] = useState(false);
@@ -117,11 +122,9 @@ export default function App() {
 
 const sendRating = async (rating) => {
 
-  setSelectedRating(rating);
-
-  setFeedbackMsg("Sending feedback...");
-
   try {
+
+    setSelectedRating(rating);
 
     await fetch(`${API_URL}/feedback`, {
 
@@ -142,7 +145,7 @@ const sendRating = async (rating) => {
 
     console.error("Feedback error:", err);
 
-    setFeedbackMsg("✗ Failed to send feedback");
+    setFeedbackMsg("✗ Feedback failed");
 
   }
 };
@@ -278,30 +281,57 @@ const sendRating = async (rating) => {
 
            <button
              className="download-btn"
+
+             disabled={downloading}
+
              onClick={async () => {
 
-               const response = await fetch(`${API_URL}${processedVideo}`)
+               try {
 
-               const blob = await response.blob()
+                 setDownloading(true);
 
-               const url = window.URL.createObjectURL(blob)
+                 setStatusMsg("⬇ Preparing download...");
 
-               const a = document.createElement("a")
+                 const response = await fetch(
+                   `${API_URL}${processedVideo}`
+                 );
 
-               a.href = url
+                 const blob = await response.blob();
 
-               a.download = "vivid_edited.mp4"
+                 const url = window.URL.createObjectURL(blob);
 
-               document.body.appendChild(a)
+                 const a = document.createElement("a");
 
-               a.click()
+                 a.href = url;
 
-               a.remove()
+                 a.download = "vivid_edited.mp4";
 
-               window.URL.revokeObjectURL(url)
+                 document.body.appendChild(a);
+
+                 a.click();
+
+                 a.remove();
+
+                 window.URL.revokeObjectURL(url);
+
+                 setStatusMsg("✓ Download started!");
+
+               } catch (err) {
+
+                 console.error(err);
+
+                 setStatusMsg("✗ Download failed");
+
+               } finally {
+
+                 setDownloading(false);
+
+               }
              }}
            >
-             DOWNLOAD MP4
+             {downloading
+               ? "PREPARING..."
+               : "DOWNLOAD MP4"}
            </button>
 
             {/* ⭐ Feedback System */}
@@ -313,21 +343,19 @@ const sendRating = async (rating) => {
               <div className="feedback-stars">
                 {[1,2,3,4,5].map((star) => (
 
-                  <button
-                    key={star}
+                 <button
+                   key={star}
 
-                    onClick={() => sendRating(star)}
+                   onClick={() => sendRating(star)}
 
-                    className={`star-btn ${
-                      star <= selectedRating
-                        ? "star-active"
-                        : "star-inactive"
-                    }`}
-
-                    disabled={sendingRating}
-                   >
-                    ★
-                  </button>
+                   className={`star-btn ${
+                     selectedRating >= star
+                       ? "star-active"
+                       : ""
+                   }`}
+                  >
+                   ★
+                 </button>
 
                 ))}
 
@@ -740,36 +768,40 @@ function Styles() {
 
   height: 52px;
 
-  border-radius: 12px;
+  border-radius: 50%;
 
   transition: all .2s ease;
+
 }
 
 .star-btn:hover {
 
-  transform: scale(1.12);
+  transform: scale(1.1);
+
 }
 
-.active-star {
+.star-active {
 
   color: #ffd700;
 
-  box-shadow:
-    0 0 18px rgba(255,215,0,.6);
+  box-shadow: 0 0 12px rgba(255,215,0,.5);
+
 }
 
 .feedback-msg {
 
-  margin-top: 8px;
+  margin-top: 10px;
 
   color: #22d3ee;
 
   font-size: 14px;
 
-  letter-spacing: .06em;
+  letter-spacing: .08em;
 
   text-align: center;
+
 }
+
 /* ⭐ FEEDBACK CSS END */
 
 
