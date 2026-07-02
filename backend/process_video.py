@@ -65,7 +65,7 @@ def detect_silence(
         text=True,
     )
 
-    stderr = result.stderr
+    stderr = result.stderr or ""
 
     # Parse silence_start / silence_end pairs from the FFmpeg log
     starts = [float(x) for x in re.findall(r"silence_start:\s*([\d.]+)", stderr)]
