@@ -138,73 +138,75 @@ def get_duration(input_path: str) -> float:
 # ──────────────────────────────────────────────────────────────
 # 4.  CUT & CONCATENATE WITH FFMPEG
 # ──────────────────────────────────────────────────────────────
-def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> None:
-    """
-    Extract every keep-segment from input_path and concatenate them
-    into output_path using FFmpeg's concat demuxer.
-
-    This approach avoids re-encoding the video stream (stream copy) which
-    keeps quality perfect and processing fast.
-    """
+def cut_and_join(input_path: str, segments: list[dict], output_path: str):
     if not segments:
-        raise ValueError("No segments to keep — the entire video may be silent.")
+        raise ValueError("No segments to keep.")
 
-    # --- Step A: extract each segment to a temp file ---
-    temp_files = []
+    filter_parts = []
+
+    concat_parts = []
+
     for i, seg in enumerate(segments):
-        temp_path = OUTPUT_DIR / f"_tmp_seg_{i:04d}.mp4"
-        duration  = seg["end"] - seg["start"]
 
-        cmd = [
-            "ffmpeg",
-            "-y",
-            "-ss", str(seg["start"]),
-            "-i", input_path,
-            "-t", str(duration),
+        start = seg["start"]
 
-            # Proper re-encode (fixes repeated clips)
-         "-c:v", "libx264",
-         "-preset", "superfast",
-         "-crf", "28",
+        end = seg["end"]
 
-         "-c:a", "aac",
-         "-b:a", "128k",
+        filter_parts.append(
+            f"[0:v]trim=start={start}:end={end},setpts=PTS-STARTPTS[v{i}];"
+        )
 
-            str(temp_path),
-        ]
-        subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-        temp_files.append(temp_path)
+        filter_parts.append(
+            f"[0:a]atrim=start={start}:end={end},asetpts=PTS-STARTPTS[a{i}];"
+        )
 
-    # --- Step B: write a concat list file ---
-    list_file = OUTPUT_DIR / "_concat_list.txt"
-    with open(list_file, "w") as f:
-        for tf in temp_files:
-            f.write(f"file '{tf.name}'\n")
+        concat_parts.append(f"[v{i}][a{i}]")
 
-    # --- Step C: concatenate all segments ---
+    concat_filter = "".join(filter_parts)
+
+    concat_filter += "".join(concat_parts)
+
+    concat_filter += f"concat=n={len(segments)}:v=1:a=1[outv][outa]"
+
     cmd = [
         "ffmpeg",
         "-y",
-        "-f", "concat",
-        "-safe", "0",
-        "-i", str(list_file),
+        "-i",
+        input_path,
 
-      "-c:v", "libx264",
-      "-preset", "superfast",
-      "-crf", "28",
+        "-filter_complex",
+        concat_filter,
 
-      "-c:a", "aac",
-      "-b:a", "128k",
+        "-map",
+        "[outv]",
+
+        "-map",
+        "[outa]",
+
+        "-c:v",
+        "libx264",
+
+        "-preset",
+        "veryfast",
+
+        "-crf",
+        "23",
+
+        "-c:a",
+        "aac",
+
+        "-b:a",
+        "128k",
 
         output_path,
     ]
-    subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
 
-    # --- Step D: clean up temp files ---
-    for tf in temp_files:
-        tf.unlink(missing_ok=True)
-    list_file.unlink(missing_ok=True)
-
+    subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=True,
+    )
 
 # ──────────────────────────────────────────────────────────────
 # 5.  MAIN ENTRY-POINT  (used by FastAPI or CLI)
