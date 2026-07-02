@@ -25,6 +25,9 @@ export default function App() {
   const [processedVideo, setProcessedVideo] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
 
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [sendingRating, setSendingRating] = useState(false);
+
   /* ── file helpers ── */
   const handleFiles = useCallback((fileList) => {
     const next = fileList?.[0];
@@ -114,9 +117,15 @@ export default function App() {
 
 const sendRating = async (rating) => {
 
+  if (sendingRating) return;
+
+  setSelectedRating(rating);
+
+  setSendingRating(true);
+
   try {
 
-    await fetch(`${API_URL}/feedback`, {
+    const response = await fetch(`${API_URL}/feedback`, {
       method: "POST",
 
       headers: {
@@ -128,11 +137,21 @@ const sendRating = async (rating) => {
       }),
     });
 
-    alert("Thanks for your feedback!");
+    if (!response.ok) {
+      throw new Error("Failed to send feedback");
+    }
+
+    setStatusMsg("⭐ Thanks for your feedback!");
 
   } catch (err) {
 
     console.error("Feedback error:", err);
+
+    setStatusMsg("✗ Failed to send feedback");
+
+  } finally {
+
+    setSendingRating(false);
 
   }
 };
@@ -302,14 +321,25 @@ const sendRating = async (rating) => {
 
               <div className="feedback-stars">
                 {[1,2,3,4,5].map((star) => (
+
                   <button
                     key={star}
+
                     onClick={() => sendRating(star)}
-                    className="star-btn"
-                  >
-                    ⭐
+
+                    className={`star-btn ${
+                      star <= selectedRating
+                        ? "star-active"
+                        : "star-inactive"
+                    }`}
+
+                    disabled={sendingRating}
+                   >
+                    ★
                   </button>
+
                 ))}
+
               </div>
             </div>
           </>
@@ -699,19 +729,36 @@ function Styles() {
 }
 
 .star-btn {
+
   background: transparent;
 
   border: none;
 
   cursor: pointer;
 
-  font-size: 32px;
+  font-size: 38px;
 
-  transition: transform .2s ease;
+  transition: all .2s ease;
+
+  -webkit-text-stroke: 1px #ffd700;
 }
 
 .star-btn:hover {
-  transform: scale(1.2);
+  transform: scale(1.15);
+}
+
+.star-active {
+
+  color: gold;
+
+  text-shadow:
+    0 0 10px gold,
+    0 0 20px gold;
+}
+
+.star-inactive {
+
+  color: transparent;
 }
 /* ⭐ FEEDBACK CSS END */
 
