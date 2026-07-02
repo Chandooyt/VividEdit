@@ -35,7 +35,7 @@ OUTPUT_DIR.mkdir(exist_ok=True)   # creates processed/ automatically
 
 # ── Silence-detection tuning ───────────────────────────────────
 # Lower SILENCE_THRESHOLD  → detects quieter silences (more aggressive cuts)
-SILENCE_THRESHOLD = -28          # dB  — good default for talking-head audio
+SILENCE_THRESHOLD = -22          # dB  — good default for talking-head audio
 
 # ──────────────────────────────────────────────────────────────
 # 1.  DETECT SILENCE
@@ -61,7 +61,7 @@ def detect_silence(
     result = subprocess.run(
         cmd,
         stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
         text=True,
     )
 
@@ -166,11 +166,15 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
 
             "-preset", "ultrafast",
 
+            "-threads", "0",
+
             "-crf", "32",
 
             "-c:a", "aac",
 
             "-b:a", "96k",
+
+            "-movflags", "+faststart",
 
             str(temp_path),
         ]
@@ -204,11 +208,15 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
 
         "-preset", "ultrafast",
 
+        "-threads", "0",
+
         "-crf", "32",
 
         "-c:a", "aac",
 
         "-b:a", "96k",
+
+        "-movflags", "+faststart",
 
         output_path,
     ]
