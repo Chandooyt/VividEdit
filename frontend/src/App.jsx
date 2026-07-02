@@ -117,15 +117,14 @@ export default function App() {
 
 const sendRating = async (rating) => {
 
-  if (sendingRating) return;
-
   setSelectedRating(rating);
 
-  setSendingRating(true);
+  setFeedbackMsg("Sending feedback...");
 
   try {
 
-    const response = await fetch(`${API_URL}/feedback`, {
+    await fetch(`${API_URL}/feedback`, {
+
       method: "POST",
 
       headers: {
@@ -137,21 +136,13 @@ const sendRating = async (rating) => {
       }),
     });
 
-    if (!response.ok) {
-      throw new Error("Failed to send feedback");
-    }
-
-    setStatusMsg("⭐ Thanks for your feedback!");
+    setFeedbackMsg("✓ Thanks for your feedback!");
 
   } catch (err) {
 
     console.error("Feedback error:", err);
 
-    setStatusMsg("✗ Failed to send feedback");
-
-  } finally {
-
-    setSendingRating(false);
+    setFeedbackMsg("✗ Failed to send feedback");
 
   }
 };
@@ -341,6 +332,11 @@ const sendRating = async (rating) => {
                 ))}
 
               </div>
+              {feedbackMsg && (
+                <p className="feedback-msg">
+                  {feedbackMsg}
+                </p>
+              )}
             </div>
           </>
         )}
@@ -732,33 +728,47 @@ function Styles() {
 
   background: transparent;
 
-  border: none;
+  border: 2px solid #ffd700;
+
+  color: transparent;
 
   cursor: pointer;
 
-  font-size: 38px;
+  font-size: 32px;
+
+  width: 52px;
+
+  height: 52px;
+
+  border-radius: 12px;
 
   transition: all .2s ease;
-
-  -webkit-text-stroke: 1px #ffd700;
 }
 
 .star-btn:hover {
-  transform: scale(1.15);
+
+  transform: scale(1.12);
 }
 
-.star-active {
+.active-star {
 
-  color: gold;
+  color: #ffd700;
 
-  text-shadow:
-    0 0 10px gold,
-    0 0 20px gold;
+  box-shadow:
+    0 0 18px rgba(255,215,0,.6);
 }
 
-.star-inactive {
+.feedback-msg {
 
-  color: transparent;
+  margin-top: 8px;
+
+  color: #22d3ee;
+
+  font-size: 14px;
+
+  letter-spacing: .06em;
+
+  text-align: center;
 }
 /* ⭐ FEEDBACK CSS END */
 
