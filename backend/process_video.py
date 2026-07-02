@@ -138,65 +138,76 @@ def get_duration(input_path: str) -> float:
 # ──────────────────────────────────────────────────────────────
 # 4.  CUT & CONCATENATE WITH FFMPEG
 # ──────────────────────────────────────────────────────────────
-def cut_and_join(input_path: str, segments: list[dict], output_path: str):
+def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> None:
+
     if not segments:
-        raise ValueError("No segments to keep.")
+        raise ValueError("No segments to keep — the entire video may be silent.")
 
-    filter_parts = []
-
-    concat_parts = []
+    temp_files = []
 
     for i, seg in enumerate(segments):
 
-        start = seg["start"]
+        temp_path = OUTPUT_DIR / f"_tmp_seg_{i:04d}.mp4"
 
-        end = seg["end"]
+        duration = seg["end"] - seg["start"]
 
-        filter_parts.append(
-            f"[0:v]trim=start={start}:end={end},setpts=PTS-STARTPTS[v{i}];"
+        cmd = [
+            "ffmpeg",
+            "-y",
+
+            "-ss", str(seg["start"]),
+
+            "-i", input_path,
+
+            "-t", str(duration),
+
+            "-c:v", "libx264",
+
+            "-preset", "superfast",
+
+            "-crf", "28",
+
+            "-c:a", "aac",
+
+            "-b:a", "96k",
+
+            str(temp_path),
+        ]
+
+        subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
         )
 
-        filter_parts.append(
-            f"[0:a]atrim=start={start}:end={end},asetpts=PTS-STARTPTS[a{i}];"
-        )
+        temp_files.append(temp_path)
 
-        concat_parts.append(f"[v{i}][a{i}]")
+    list_file = OUTPUT_DIR / "_concat_list.txt"
 
-    concat_filter = "".join(filter_parts)
-
-    concat_filter += "".join(concat_parts)
-
-    concat_filter += f"concat=n={len(segments)}:v=1:a=1[outv][outa]"
+    with open(list_file, "w") as f:
+        for tf in temp_files:
+            f.write(f"file '{tf.name}'\n")
 
     cmd = [
         "ffmpeg",
         "-y",
-        "-i",
-        input_path,
+        
+        "-f", "concat",
 
-        "-filter_complex",
-        concat_filter,
+        "-safe", "0",
 
-        "-map",
-        "[outv]",
+        "-i", str(list_file),
 
-        "-map",
-        "[outa]",
+        "-c:v", "libx264",
 
-        "-c:v",
-        "libx264",
+        "-preset", "superfast",
 
-        "-preset",
-        "veryfast",
+        "-crf", "28",
 
-        "-crf",
-        "23",
+        "-c:a", "aac",
 
-        "-c:a",
-        "aac",
-
-        "-b:a",
-        "128k",
+        "-b:a", "96k",
 
         output_path,
     ]
@@ -207,6 +218,11 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str):
         stderr=subprocess.PIPE,
         check=True,
     )
+
+    for tf in temp_files:
+        tf.unlink(missing_ok=True)
+
+    list_file.unlink(missing_ok=True)
 
 # ──────────────────────────────────────────────────────────────
 # 5.  MAIN ENTRY-POINT  (used by FastAPI or CLI)
