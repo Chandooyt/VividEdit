@@ -35,7 +35,7 @@ OUTPUT_DIR.mkdir(exist_ok=True)   # creates processed/ automatically
 
 # ── Silence-detection tuning ───────────────────────────────────
 # Lower SILENCE_THRESHOLD  → detects quieter silences (more aggressive cuts)
-SILENCE_THRESHOLD = -20          # dB  — good default for talking-head audio
+SILENCE_THRESHOLD = -28          # dB  — good default for talking-head audio
 
 # ──────────────────────────────────────────────────────────────
 # 1.  DETECT SILENCE
@@ -57,11 +57,11 @@ def detect_silence(
     ]
 
     print(f"[VIVID] Analysing audio: {input_path}")
-    result = subprocess.run(
+    subprocess.run(
         cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,   # FFmpeg writes its log to stderr
-        text=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=True,
     )
 
     stderr = result.stderr
@@ -192,7 +192,7 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
     cmd = [
         "ffmpeg",
         "-y",
-        
+
         "-f", "concat",
 
         "-safe", "0",
