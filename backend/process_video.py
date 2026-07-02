@@ -57,11 +57,12 @@ def detect_silence(
     ]
 
     print(f"[VIVID] Analysing audio: {input_path}")
-    subprocess.run(
+
+    result = subprocess.run(
         cmd,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
     )
 
     stderr = result.stderr
