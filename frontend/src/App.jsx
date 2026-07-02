@@ -265,13 +265,34 @@ const sendRating = async (rating) => {
 
         {processedVideo && (
           <>
-            <a
-              className="download-btn"
-              href={`${API_URL}${processedVideo}`}
-              download
-            >
-                DOWNLOAD MP4
-            </a>
+
+           <button
+             className="download-btn"
+             onClick={async () => {
+
+               const response = await fetch(`${API_URL}${processedVideo}`)
+
+               const blob = await response.blob()
+
+               const url = window.URL.createObjectURL(blob)
+
+               const a = document.createElement("a")
+
+               a.href = url
+
+               a.download = "vivid_edited.mp4"
+
+               document.body.appendChild(a)
+
+               a.click()
+
+               a.remove()
+
+               window.URL.revokeObjectURL(url)
+             }}
+           >
+             DOWNLOAD MP4
+           </button>
 
             {/* ⭐ Feedback System */}
             <div className="feedback-box">
