@@ -35,7 +35,7 @@ OUTPUT_DIR.mkdir(exist_ok=True)   # creates processed/ automatically
 
 # ── Silence-detection tuning ───────────────────────────────────
 # Lower SILENCE_THRESHOLD  → detects quieter silences (more aggressive cuts)
-SILENCE_THRESHOLD = -22          # dB  — good default for talking-head audio
+SILENCE_THRESHOLD = -28          # dB  — good default for talking-head audio
 
 # ──────────────────────────────────────────────────────────────
 # 1.  DETECT SILENCE
@@ -106,7 +106,7 @@ def build_keep_segments(
         seg_end   = silence["start"] + pad_seconds     # keep a tiny tail
         seg_start = cursor
 
-        if seg_end > seg_start + 0.3:                 # skip micro-segments
+        if seg_end > seg_start + 0.5:                 # skip micro-segments
             keep.append({"start": seg_start, "end": seg_end})
 
         cursor = max(cursor, silence["end"] - pad_seconds)   # next segment starts here
@@ -142,42 +142,30 @@ def get_duration(input_path: str) -> float:
 def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> None:
 
     if not segments:
-        raise ValueError("No segments to keep — the entire video may be silent.")
+        raise ValueError("No valid segments found.")
 
     temp_files = []
 
     for i, seg in enumerate(segments):
 
-        temp_path = OUTPUT_DIR / f"_tmp_seg_{i:04d}.mp4"
-
         duration = seg["end"] - seg["start"]
 
-        if duration < 0.3:
+        # skip tiny broken clips
+        if duration < 0.5:
             continue
+
+        temp_path = OUTPUT_DIR / f"_tmp_seg_{i:04d}.mp4"
 
         cmd = [
             "ffmpeg",
             "-y",
 
             "-ss", str(seg["start"]),
+            "-t", str(duration),
 
             "-i", input_path,
 
-            "-t", str(duration),
-
-            "-c:v", "libx264",
-
-            "-preset", "ultrafast",
-
-            "-threads", "0",
-
-            "-crf", "32",
-
-            "-c:a", "aac",
-
-            "-b:a", "96k",
-
-            "-movflags", "+faststart",
+            "-c", "copy",
 
             str(temp_path),
         ]
@@ -189,48 +177,41 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
             check=True,
         )
 
-        temp_files.append(temp_path)
+        # keep only real files
+        if temp_path.exists() and temp_path.stat().st_size > 1000:
+            temp_files.append(temp_path)
+
+    if not temp_files:
+        raise ValueError("All clips were too short.")
 
     list_file = OUTPUT_DIR / "_concat_list.txt"
 
     with open(list_file, "w") as f:
         for tf in temp_files:
-            f.write(f"file '{tf.name}'\n")
+            f.write(f"file '{tf.resolve()}'\n")
 
     cmd = [
         "ffmpeg",
         "-y",
 
         "-f", "concat",
-
         "-safe", "0",
 
         "-i", str(list_file),
 
-        "-c:v", "libx264",
-
-        "-preset", "ultrafast",
-
-        "-threads", "0",
-
-        "-crf", "32",
-
-        "-c:a", "aac",
-
-        "-b:a", "96k",
-
-        "-movflags", "+faststart",
+        "-c", "copy",
 
         output_path,
     ]
 
     subprocess.run(
         cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
         check=True,
     )
 
+    # cleanup
     for tf in temp_files:
         tf.unlink(missing_ok=True)
 
