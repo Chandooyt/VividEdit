@@ -164,12 +164,11 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
 
             # Proper re-encode (fixes repeated clips)
          "-c:v", "libx264",
-         "-preset", "ultrafast",
-         "-crf", "32",
-         "-vf", "scale=720:-2",
+         "-preset", "superfast",
+         "-crf", "28",
 
          "-c:a", "aac",
-         "-b:a", "96k",
+         "-b:a", "128k",
 
             str(temp_path),
         ]
@@ -190,13 +189,12 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
         "-safe", "0",
         "-i", str(list_file),
 
-       "-c:v", "libx264",
-       "-preset", "ultrafast",
-       "-crf", "32",
-       "-vf", "scale=720:-2",
+      "-c:v", "libx264",
+      "-preset", "superfast",
+      "-crf", "28",
 
-       "-c:a", "aac",
-       "-b:a", "96k",
+      "-c:a", "aac",
+      "-b:a", "128k",
 
         output_path,
     ]
@@ -285,25 +283,13 @@ def process_video(input_path: str, prompt: str = "") -> dict:
         print(f"[VIVID AI] silence_duration={silence_duration}")
         print(f"[VIVID AI] pad_seconds={pad_seconds}")
 
-        # 2. AI Video Analysis
-        analysis = analyze_video(input_path)
-
-        video_type = analysis["video_type"]
-        profile = analysis["profile"]
-
-        silence_duration = profile["silence_duration"]
-        pad_seconds = profile["pad_seconds"]
-
-        print(f"[VIVID AI] Detected video type: {video_type}")
-        print(f"[VIVID AI] Using profile: {profile['label']}")
-
-        # 3. Silence detection
+        # 2. Silence detection
         silence_intervals = detect_silence(
             input_path,
             silence_duration,
         )
 
-        # 4. If no silence found, just copy the file as-is
+        # 3. If no silence found, just copy the file as-is
         if not silence_intervals:
             print("[VIVID] No silence detected — copying file unchanged.")
             import shutil
@@ -318,18 +304,18 @@ def process_video(input_path: str, prompt: str = "") -> dict:
                 "message":            "No silence detected. File copied unchanged.",
             }
 
-        # 5. Build keep-segments
+        # 4. Build keep-segments
         keep_segments = build_keep_segments(
             silence_intervals,
             total_duration,
             pad_seconds,
         )
 
-        # 6. Cut & join
+        # 5. Cut & join
         print(f"[VIVID] Cutting & joining {len(keep_segments)} segment(s)…")
         cut_and_join(input_path, keep_segments, output_path)
 
-        # 7. Measure output
+        # 6. Measure output
         processed_duration = get_duration(output_path)
         time_removed       = total_duration - processed_duration
 
