@@ -165,7 +165,12 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
 
             "-i", input_path,
 
-            "-c", "copy",
+            "-preset", "ultrafast",
+
+            "-c:v", "libx264",
+            "-c:a", "aac",
+
+            "-movflags", "+faststart",
 
             str(temp_path),
         ]
@@ -199,7 +204,12 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
 
         "-i", str(list_file),
 
-        "-c", "copy",
+        "-preset", "ultrafast",
+
+        "-c:v", "libx264",
+        "-c:a", "aac",
+
+        "-movflags", "+faststart",
 
         output_path,
     ]
