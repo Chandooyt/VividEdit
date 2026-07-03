@@ -33,31 +33,60 @@ export default function App() {
   const [selectedRating, setSelectedRating] = useState(0);
   const [sendingRating, setSendingRating] = useState(false);
 
+  const [previewUrl, setPreviewUrl] = useState("");
+
   /* ── file helpers ── */
   const handleFiles = useCallback((fileList) => {
-    const next = fileList?.[0];
-    if (next && next.type.startsWith("video/")) {
-      setFile(next);
-      setStatusMsg("");
-      setProcessedVideo("");
-    }
-  }, []);
 
-  const onDrop = useCallback(
-    (e) => {
-      e.preventDefault();
-      setIsDragging(false);
-      handleFiles(e.dataTransfer.files);
-    },
-    [handleFiles]
-  );
+  const next = fileList?.[0];
+
+  // NO FILE
+  if (!next) return;
+
+  // CHECK VIDEO TYPE
+  if (!next.type.startsWith("video/")) {
+
+    setStatusMsg(
+      "✗ Please upload a video file"
+    );
+
+    return;
+  }
+
+  // FILE SIZE LIMIT = 100MB
+  const MAX_SIZE = 100 * 1024 * 1024;
+
+  if (next.size > MAX_SIZE) {
+
+    setStatusMsg(
+      "✗ Video too large (Max: 100MB)"
+    );
+
+    return;
+  }
+
+  // CREATE SAFE VIDEO URL
+  const url = URL.createObjectURL(next);
+
+  // STORE FILE
+  setFile(next);
+
+  // STORE PREVIEW URL
+  setPreviewUrl(url);
+
+  // RESET OLD STATES
+  setStatusMsg("");
+
+  setProcessedVideo("");
+
+}, []);
 
   /* ── backend call ── */
   const runEngine = useCallback(async () => {
     if (running) return;
     setRunning(true);
     setUploadProgress(0);
-    setStatusMsg("⚙ Uploading & processing…");
+    setStatusMsg("🧠 Analyzing speech...");
     setProcessedVideo("");
 
     try {
@@ -77,6 +106,26 @@ export default function App() {
           if (event.lengthComputable) {
             const percent = Math.round((event.loaded / event.total) * 100);
             setUploadProgress(percent);
+            if (percent > 20) {
+
+              setStatusMsg(
+                "🎙 Detecting dead air..."
+              );
+            }
+
+            if (percent > 45) {
+
+              setStatusMsg(
+                "✂ Optimizing pacing..."
+              );
+            }
+
+            if (percent > 70) {
+
+              setStatusMsg(
+                "🎬 Exporting final cut..."
+              );
+            }
           }
         };
 
@@ -112,7 +161,24 @@ export default function App() {
 
     } catch (err) {
       console.error("[VIVID] Upload error:", err);
-      setStatusMsg(`✗ ${err.message}`);
+      if (err.message.includes("Failed to fetch")) {
+
+        setStatusMsg(
+          "✗ Free server overloaded — retry in a moment"
+        );
+
+      } else if (err.message.includes("Network")) {
+
+        setStatusMsg(
+          "✗ Upload interrupted"
+        );
+
+      } else {
+
+        setStatusMsg(
+          "✗ Processing failed"
+        );
+      }
     } finally {
       setRunning(false);
     }
@@ -188,7 +254,7 @@ const sendRating = async (rating) => {
               <>
                 <video
                   className="video-preview"
-                  src={URL.createObjectURL(file)}
+                  src={previewUrl}
                   controls
                 />
 
