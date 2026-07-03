@@ -177,8 +177,6 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
 
         subprocess.run(
             cmd,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
             check=True,
         )
 
@@ -204,10 +202,13 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
 
         "-i", str(list_file),
 
+        "-c:v", "libx264",
         "-preset", "ultrafast",
 
-        "-c:v", "libx264",
+        "-pix_fmt", "yuv420p",
+
         "-c:a", "aac",
+        "-b:a", "128k",
 
         "-movflags", "+faststart",
 
@@ -216,8 +217,6 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
 
     subprocess.run(
         cmd,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
         check=True,
     )
 
