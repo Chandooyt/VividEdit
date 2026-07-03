@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
  * VIVID — Agentic AI Video Editor
@@ -34,6 +34,20 @@ export default function App() {
   const [sendingRating, setSendingRating] = useState(false);
 
   const [previewUrl, setPreviewUrl] = useState("");
+  
+  useEffect(() => {
+
+  return () => {
+
+    if (previewUrl) {
+
+      URL.revokeObjectURL(previewUrl);
+
+    }
+
+  };
+
+}, [previewUrl]);
 
   /* ── file helpers ── */
   const handleFiles = useCallback((fileList) => {
@@ -80,6 +94,22 @@ export default function App() {
   setProcessedVideo("");
 
 }, []);
+
+const onDrop = useCallback(
+
+  (e) => {
+
+    e.preventDefault();
+
+    setIsDragging(false);
+
+    handleFiles(e.dataTransfer.files);
+
+  },
+
+  [handleFiles]
+
+);
 
   /* ── backend call ── */
   const runEngine = useCallback(async () => {
