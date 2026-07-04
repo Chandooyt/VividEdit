@@ -82,7 +82,25 @@ async def upload_video(
 
     # ── 3. Run FFmpeg silence-removal processor ─────────────────
     print(f"[VIVID] Starting processor for: {dest}")
-    processing_result = process_video(str(dest), prompt)
+    try:
+
+        processing_result = process_video(
+            str(dest),
+            prompt
+        )
+
+    except Exception as e:
+
+        print(f"[UPLOAD ERROR] {e}")
+
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "message": str(e)
+            }
+        )
+
     # DELETE UPLOADED FILE AFTER PROCESSING
     try:
         if os.path.exists(dest):
@@ -149,22 +167,41 @@ async def save_feedback(data: Feedback):
     return {
         "success": True
     }
-    
-    def auto_delete_processed(file_path: str, delay_seconds: int = 3600):
-        def delete_file():
-            time.sleep(delay_seconds)
 
-            try:
-                if os.path.exists(file_path):
-                    os.remove(file_path)
-                    print(f"[VIVID AI] Auto-deleted processed → {file_path}")
 
-            except Exception as e:
-                print(f"[VIVID AI] Auto-delete failed → {e}")
+# ── AUTO DELETE PROCESSED VIDEOS ─────────────────────────────
+def auto_delete_processed(
+    file_path: str,
+    delay_seconds: int = 3600
+):
 
-        thread = threading.Thread(target=delete_file)
-        thread.daemon = True
-        thread.start()
+    def delete_file():
+
+        time.sleep(delay_seconds)
+
+        try:
+
+            if os.path.exists(file_path):
+
+                os.remove(file_path)
+
+                print(
+                    f"[VIVID AI] Auto-deleted processed → {file_path}"
+                )
+
+        except Exception as e:
+
+            print(
+                f"[VIVID AI] Auto-delete failed → {e}"
+            )
+
+    thread = threading.Thread(
+        target=delete_file
+    )
+
+    thread.daemon = True
+
+    thread.start()
 
 # ── Run ────────────────────────────────────────────────────────
 # Start with:  uvicorn main:app --reload

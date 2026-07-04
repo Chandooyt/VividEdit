@@ -13,7 +13,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 const API_URL = "https://p01--vivid-backend--5ykddwtmxz7v.code.run";
 const DEFAULT_PROMPT =
-  "Cut out dead air, remove stutters, and keep pacing aggressive.";
+  "Write your prompt.";
 
 export default function App() {
   const inputRef = useRef(null);
