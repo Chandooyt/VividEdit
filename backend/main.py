@@ -72,6 +72,16 @@ async def upload_video(
     # ── 3. Run FFmpeg silence-removal processor ─────────────────
     print(f"[VIVID] Starting processor for: {dest}")
     processing_result = process_video(str(dest), prompt)
+    # DELETE ORIGINAL UPLOAD
+    try:
+
+        os.remove(dest)
+
+        print(f"[VIVID] Deleted Upload → {dest}")
+
+    except Exception as e:
+
+         print(f"[VIVID] Upload Delete Failed → {e}")
     print(f"[VIVID] Processor result: {processing_result}")
 
     # ── 4. Build the download path the frontend will use ────────

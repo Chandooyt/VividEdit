@@ -361,7 +361,15 @@ const sendRating = async (rating) => {
 
         {running && (
           <div className="loader-wrap">
-            <div className="loader"></div>
+            <div className="ai-loader">
+
+              <div className="pulse-ring"></div>
+
+              <div className="pulse-ring delay"></div>
+
+              <div className="core-loader"></div>
+
+            </div>
             <p className="loading-text">
               AI is editing your video...
             </p>
@@ -764,28 +772,65 @@ function Styles() {
         gap: 14px;
       }
 
-      .loader {
-        width: 60px;
-        height: 60px;
-        border: 4px solid rgba(255,255,255,.15);
-        border-top: 4px solid #22d3ee;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        box-shadow: 0 0 20px rgba(34,211,238,.5);
-      }
+    .ai-loader {
 
-      .loading-text {
-        color: #22d3ee;
-        font-size: 14px;
-        letter-spacing: .08em;
-        text-shadow: 0 0 10px rgba(34,211,238,.5);
-      }
+  position: relative;
 
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
+  width: 90px;
+  height: 90px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.core-loader {
+
+  width: 26px;
+  height: 26px;
+
+  border-radius: 50%;
+
+  background: #22d3ee;
+
+  box-shadow:
+    0 0 20px #22d3ee,
+    0 0 40px #22d3ee;
+
+  z-index: 2;
+}
+
+.pulse-ring {
+
+  position: absolute;
+
+  width: 100%;
+  height: 100%;
+
+  border: 2px solid rgba(34,211,238,.7);
+
+  border-radius: 50%;
+
+  animation: pulseRing 2s linear infinite;
+}
+
+.pulse-ring.delay {
+
+  animation-delay: 1s;
+}
+
+@keyframes pulseRing {
+
+  0% {
+    transform: scale(.4);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
 
       .status-msg {
         margin: 0;

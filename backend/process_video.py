@@ -81,7 +81,7 @@ def detect_silence(
             ends.append(total)
 
     intervals = [{"start": s, "end": e} for s, e in zip(starts, ends)]
-    print(f"[VIVID] Found {len(intervals)} silent interval(s).")
+    print(f"[VIVID AI] Silence Regions Detected → {len(intervals)}")
     return intervals
 
 
@@ -115,7 +115,7 @@ def build_keep_segments(
     if cursor < total_duration - 0.05:
         keep.append({"start": cursor, "end": total_duration})
 
-    print(f"[VIVID] Keeping {len(keep)} segment(s) out of full video.")
+    print(f"[VIVID AI] Final Segments Kept → {len(keep)}")
     return keep
 
 
@@ -259,7 +259,7 @@ def process_video(input_path: str, prompt: str = "") -> dict:
     try:
         # 1. Total duration
         total_duration = get_duration(input_path)
-        print(f"[VIVID] Total duration : {total_duration:.2f}s")
+        print(f"[VIVID AI] Video Duration → {total_duration:.2f}s")
 
         # ── VIVID AI ANALYSIS ─────────────────────────
         analysis = analyze_video(input_path)
@@ -332,14 +332,14 @@ def process_video(input_path: str, prompt: str = "") -> dict:
         )
 
         # 5. Cut & join
-        print(f"[VIVID] Cutting & joining {len(keep_segments)} segment(s)…")
+        print("[VIVID] Rendering Final Edit {len(keep_segments)} segment(s)…")
         cut_and_join(input_path, keep_segments, output_path)
 
         # 6. Measure output
         processed_duration = get_duration(output_path)
         time_removed       = total_duration - processed_duration
 
-        print(f"[VIVID] Done! Removed {time_removed:.2f}s of silence.")
+        print("[VIVID] Export Complete Removed {time_removed:.2f}s of silence.")
         print(f"[VIVID] Output → {output_path}")
 
         return {
