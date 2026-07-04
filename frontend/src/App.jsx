@@ -177,9 +177,18 @@ const onDrop = useCallback(
       // Print full backend response to browser console (beginner-friendly)
       console.log("[VIVID] Backend response:", json);
 
-      if (!response.ok) {
-        // FastAPI error shape: { detail: "..." }
-        throw new Error(json.detail ?? `HTTP ${response.status}`);
+      if (
+        !response.ok ||
+        !json.processing ||
+        json.processing.success === false
+      ) {
+
+        throw new Error(
+          json.processing?.message ||
+          json.detail ||
+          `HTTP ${response.status}`
+        );
+
       }
 
       setStatusMsg(
