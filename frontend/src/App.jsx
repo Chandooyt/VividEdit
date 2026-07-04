@@ -182,7 +182,9 @@ const onDrop = useCallback(
         throw new Error(json.detail ?? `HTTP ${response.status}`);
       }
 
-      setStatusMsg(`✓ ${json.message ?? "Done!"}`);
+      setStatusMsg(
+          "✔️ Video edited successfully"
+      );
 
       if (json.processed_video) {
         setProcessedVideo(json.processed_video);
@@ -190,26 +192,75 @@ const onDrop = useCallback(
       }
 
     } catch (err) {
-      console.error("[VIVID] Upload error:", err);
-      if (err.message.includes("Failed to fetch")) {
 
-        setStatusMsg(
-          "✗ Free server overloaded — retry in a moment"
-        );
+  console.error("[VIVID] Upload error:", err);
 
-      } else if (err.message.includes("Network")) {
+  const message = err.message.toLowerCase();
 
-        setStatusMsg(
-          "✗ Upload interrupted"
-        );
+  // SERVER SLEEPING / OVERLOADED
+  if (
+    message.includes("failed to fetch")
+  ) {
 
-      } else {
+    setStatusMsg(
+      "⚠ Server waking up... please retry in a few seconds"
+    );
 
-        setStatusMsg(
-          "✗ Processing failed"
-        );
-      }
-    } finally {
+  }
+
+  // NETWORK LOST
+  else if (
+    message.includes("network")
+  ) {
+
+    setStatusMsg(
+      "📡 Internet connection interrupted"
+    );
+
+  }
+
+  // FILE TOO LARGE
+  else if (
+    message.includes("413")
+  ) {
+
+    setStatusMsg(
+      "🎞 Video too large for processing"
+    );
+
+  }
+
+  // INVALID VIDEO
+  else if (
+    message.includes("invalid")
+  ) {
+
+    setStatusMsg(
+      "🚫 Unsupported or corrupted video file"
+    );
+
+  }
+
+  // PROCESSING CRASH
+  else if (
+    message.includes("ffmpeg")
+  ) {
+
+    setStatusMsg(
+      "⚙ AI editor crashed while rendering"
+    );
+
+  }
+
+  // UNKNOWN
+  else {
+
+    setStatusMsg(
+      "❌ Something went wrong during editing"
+    );
+
+  }
+} finally {
       setRunning(false);
     }
   }, [file, prompt, running]);
@@ -418,13 +469,17 @@ const sendRating = async (rating) => {
 
                  window.URL.revokeObjectURL(url);
 
-                 setStatusMsg("✓ Download started!");
+                 setStatusMsg(
+                   "⬇ Download started successfully"
+                 );
 
                } catch (err) {
 
                  console.error(err);
 
-                 setStatusMsg("✗ Download failed");
+                 setStatusMsg(
+                   "⚠ Download failed — retry again"
+                 );
 
                } finally {
 
