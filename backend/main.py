@@ -87,13 +87,32 @@ async def upload_video(
     # ── 4. Build the download path the frontend will use ────────
     # processor.py saves to e.g. "processed/video_vivid.mp4"
     # We expose that as a URL: http://127.0.0.1:8000/processed/video_vivid.mp4
+      # ── 4. Build processed video URL ─────────────────────
+
     processed_video = ""
-    if processing_result.get("success") and processing_result.get("output_path"):
-        # Convert OS path to a forward-slash URL segment
-        # e.g. "processed/video_vivid.mp4"  →  "processed/video_vivid.mp4"
-        processed_video = f"/processed/{Path(processing_result['output_path']).name}"
-        if processing_result.get("success"):
-            auto_delete_processed(processing_result["output_path"], 3600)
+
+    if (
+        processing_result.get("success")
+        and processing_result.get("output_path")
+    ):
+
+        output_name = Path(
+            processing_result["output_path"]
+        ).name
+
+        processed_video = (
+            f"/processed/{output_name}"
+        )
+
+        print(
+            f"[VIVID AI] Processed Video URL → {processed_video}"
+        )
+
+        # AUTO DELETE AFTER 1 HOUR
+        auto_delete_processed(
+            processing_result["output_path"],
+            3600
+        )
 
     # ── 5. Return combined JSON response ────────────────────────
     return JSONResponse(
@@ -122,25 +141,24 @@ async def save_feedback(data: Feedback):
         "success": True
     }
     
+    def auto_delete_processed(file_path: str, delay_seconds: int = 3600):
+        def delete_file():
+            time.sleep(delay_seconds)
+
+            try:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                    print(f"[VIVID AI] Auto-deleted processed → {file_path}")
+
+            except Exception as e:
+                print(f"[VIVID AI] Auto-delete failed → {e}")
+
+        thread = threading.Thread(target=delete_file)
+        thread.daemon = True
+        thread.start()
 
 # ── Run ────────────────────────────────────────────────────────
 # Start with:  uvicorn main:app --reload
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
-
-def auto_delete_processed(file_path: str, delay_seconds: int = 3600):
-    def delete_file():
-        time.sleep(delay_seconds)
-
-        try:
-            if os.path.exists(file_path):
-                os.remove(file_path)
-                print(f"[VIVID AI] Auto-deleted processed → {file_path}")
-
-        except Exception as e:
-            print(f"[VIVID AI] Auto-delete failed → {e}")
-
-    thread = threading.Thread(target=delete_file)
-    thread.daemon = True
-    thread.start()
