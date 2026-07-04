@@ -332,14 +332,14 @@ def process_video(input_path: str, prompt: str = "") -> dict:
         )
 
         # 5. Cut & join
-        print("[VIVID] Rendering Final Edit {len(keep_segments)} segment(s)…")
+        print(f"[VIVID] Rendering Final Edit {len(keep_segments)} segment(s)…")
         cut_and_join(input_path, keep_segments, output_path)
 
         # 6. Measure output
         processed_duration = get_duration(output_path)
         time_removed       = total_duration - processed_duration
 
-        print("[VIVID] Export Complete Removed {time_removed:.2f}s of silence.")
+        print(f"[VIVID] Export Complete Removed {time_removed:.2f}s of silence.")
         print(f"[VIVID] Output → {output_path}")
 
         return {
@@ -353,9 +353,23 @@ def process_video(input_path: str, prompt: str = "") -> dict:
         }
 
     except subprocess.CalledProcessError as e:
-        msg = f"FFmpeg error: {e.stderr.decode(errors='replace') if e.stderr else str(e)}"
-        print(f"[VIVID] ERROR: {msg}")
-        return {"success": False, "message": msg}
+
+        error_text = str(e)
+
+        if e.stderr:
+
+            try:
+                error_text = e.stderr
+
+            except:
+                error_text = str(e)
+
+        print(f"[VIVID AI ERROR] {error_text}")
+
+        return {
+            "success": False,
+            "message": error_text
+        }
 
     except Exception as e:
         print(f"[VIVID] ERROR: {e}")
