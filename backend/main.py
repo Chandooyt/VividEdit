@@ -1,5 +1,7 @@
 import os
 import shutil
+import threading
+import time
 from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, UploadFile, Form
@@ -72,16 +74,14 @@ async def upload_video(
     # ── 3. Run FFmpeg silence-removal processor ─────────────────
     print(f"[VIVID] Starting processor for: {dest}")
     processing_result = process_video(str(dest), prompt)
-    # DELETE ORIGINAL UPLOAD
+    # DELETE UPLOADED FILE AFTER PROCESSING
     try:
-
-        os.remove(dest)
-
-        print(f"[VIVID] Deleted Upload → {dest}")
+        if os.path.exists(dest):
+            os.remove(dest)
+            print(f"[VIVID AI] Deleted upload file → {dest}")
 
     except Exception as e:
-
-         print(f"[VIVID] Upload Delete Failed → {e}")
+        print(f"[VIVID AI] Failed to delete upload → {e}")
     print(f"[VIVID] Processor result: {processing_result}")
 
     # ── 4. Build the download path the frontend will use ────────
@@ -92,6 +92,8 @@ async def upload_video(
         # Convert OS path to a forward-slash URL segment
         # e.g. "processed/video_vivid.mp4"  →  "processed/video_vivid.mp4"
         processed_video = f"/processed/{Path(processing_result['output_path']).name}"
+        if processing_result.get("success"):
+            auto_delete_processed(processing_result["output_path"], 3600)
 
     # ── 5. Return combined JSON response ────────────────────────
     return JSONResponse(
@@ -126,3 +128,19 @@ async def save_feedback(data: Feedback):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+
+def auto_delete_processed(file_path: str, delay_seconds: int = 3600):
+    def delete_file():
+        time.sleep(delay_seconds)
+
+        try:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                print(f"[VIVID AI] Auto-deleted processed → {file_path}")
+
+        except Exception as e:
+            print(f"[VIVID AI] Auto-delete failed → {e}")
+
+    thread = threading.Thread(target=delete_file)
+    thread.daemon = True
+    thread.start()
