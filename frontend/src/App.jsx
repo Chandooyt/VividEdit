@@ -29,6 +29,7 @@ export default function App() {
   const [feedbackMsg, setFeedbackMsg] = useState("");
 
   const [downloading, setDownloading] = useState(false);
+  const [downloadCountdown, setDownloadCountdown] = useState(null);
 
   const [selectedRating, setSelectedRating] = useState(0);
   const [sendingRating, setSendingRating] = useState(false);
@@ -447,28 +448,57 @@ const sendRating = async (rating) => {
              className="download-btn"
 
              disabled={downloading}
-
+ 
              onClick={async () => {
 
                try {
 
                  setDownloading(true);
 
-                 setStatusMsg("⬇ Preparing download...");
+                 setStatusMsg(
+                   "⬇ Preparing secure download..."
+                 );
 
+                 // RANDOM REALISTIC TIME
+                 const estimatedTime =
+                   Math.floor(Math.random() * 8) + 8;
+
+                 setDownloadCountdown(
+                   estimatedTime
+                 );
+
+                 // COUNTDOWN
+                 for (
+                   let i = estimatedTime;
+                   i >= 1;
+                   i--
+                 ) {
+
+                   setDownloadCountdown(i);
+
+                   await new Promise(
+                     (resolve) =>
+                       setTimeout(resolve, 1000)
+                   );
+                 }
+
+                 // START REAL DOWNLOAD
                  const response = await fetch(
                    `${API_URL}${processedVideo}`
                  );
 
                  const blob = await response.blob();
 
-                 const url = window.URL.createObjectURL(blob);
+                 const url =
+                 window.URL.createObjectURL(blob);
 
-                 const a = document.createElement("a");
+                 const a =
+                 document.createElement("a");
 
                  a.href = url;
 
-                 a.download = "vivid_edited.mp4";
+                 a.download =
+                   "vivid_edited.mp4";
 
                  document.body.appendChild(a);
 
@@ -477,6 +507,8 @@ const sendRating = async (rating) => {
                  a.remove();
 
                  window.URL.revokeObjectURL(url);
+
+                 setDownloadCountdown(null);
 
                  setStatusMsg(
                    "⬇ Download started successfully"
@@ -492,13 +524,13 @@ const sendRating = async (rating) => {
 
                } finally {
 
-                 setDownloading(false);
+               setDownloading(false);
 
                }
              }}
            >
              {downloading
-               ? "PREPARING..."
+               ? `DOWNLOADING IN ${downloadCountdown}s`
                : "DOWNLOAD MP4"}
            </button>
 
@@ -961,27 +993,25 @@ function Styles() {
 
   background: transparent;
 
-  border: 2px solid #ffd700;
+  border: none;
 
   color: transparent;
 
   cursor: pointer;
 
-  font-size: 32px;
-
-  width: 52px;
-
-  height: 52px;
-
-  border-radius: 50%;
+  font-size: 38px;
 
   transition: all .2s ease;
+
+  -webkit-text-stroke: 2px #ffd700;
+
+  text-shadow: none;
 
 }
 
 .star-btn:hover {
 
-  transform: scale(1.1);
+transform: scale(1.15);
 
 }
 
@@ -989,9 +1019,15 @@ function Styles() {
 
   color: #ffd700;
 
-  box-shadow: 0 0 12px rgba(255,215,0,.5);
+  -webkit-text-stroke: 0px;
+
+  text-shadow:
+    0 0 10px #ffd700,
+    0 0 20px #ffd700,
+    0 0 40px rgba(255,215,0,.7);
 
 }
+
 
 .feedback-msg {
 
