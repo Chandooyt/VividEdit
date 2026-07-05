@@ -30,6 +30,7 @@ export default function App() {
 
   const [downloading, setDownloading] = useState(false);
   const [downloadCountdown, setDownloadCountdown] = useState(null);
+  const [downloadSpeed, setDownloadSpeed] = useState(0);
 
   const [selectedRating, setSelectedRating] = useState(0);
   const [sendingRating, setSendingRating] = useState(false);
@@ -448,7 +449,7 @@ const sendRating = async (rating) => {
              className="download-btn"
 
              disabled={downloading}
- 
+
              onClick={async () => {
 
                try {
@@ -456,81 +457,112 @@ const sendRating = async (rating) => {
                  setDownloading(true);
 
                  setStatusMsg(
-                   "⬇ Preparing secure download..."
+                   "⬇ Preparing download..."
                  );
 
-                 // RANDOM REALISTIC TIME
-                 const estimatedTime =
-                   Math.floor(Math.random() * 8) + 8;
+                 const xhr = new XMLHttpRequest();
 
-                 setDownloadCountdown(
-                   estimatedTime
+                 xhr.open(
+                   "GET",
+                   `${API_URL}${processedVideo}`,
+                   true
                  );
 
-                 // COUNTDOWN
-                 for (
-                   let i = estimatedTime;
-                   i >= 1;
-                   i--
-                 ) {
+                 xhr.responseType = "blob";
 
-                   setDownloadCountdown(i);
+                 const startTime = Date.now();
 
-                   await new Promise(
-                     (resolve) =>
-                       setTimeout(resolve, 1000)
+                 xhr.onprogress = (event) => {
+
+                   if (event.lengthComputable) {
+
+                     const loaded = event.loaded;
+
+                     const total = event.total;
+
+                     const elapsed =
+                       (Date.now() - startTime) / 1000;
+
+                     const speed =
+                       loaded / elapsed;
+
+                     setDownloadSpeed(speed);
+
+                     const remainingBytes =
+                       total - loaded;
+
+                     const remainingSeconds =
+                       Math.ceil(
+                         remainingBytes / speed
+                       );
+
+                     setDownloadCountdown(
+                       remainingSeconds
+                     );
+
+                     setStatusMsg(
+                       `⬇ Download starting in ${remainingSeconds}s`
+                     );
+                   }
+                 };
+
+                 xhr.onload = () => {
+
+                   const blob = xhr.response;
+
+                   const url =
+                     window.URL.createObjectURL(blob);
+
+                   const a =
+                     document.createElement("a");
+
+                   a.href = url;
+
+                   a.download =
+                     "vivid_edited.mp4";
+
+                   document.body.appendChild(a);
+
+                   a.click();
+
+                   a.remove();
+
+                   window.URL.revokeObjectURL(url);
+
+                   setDownloadCountdown(null);
+
+                   setStatusMsg(
+                     "⬇ Download started successfully"
                    );
-                 }
 
-                 // START REAL DOWNLOAD
-                 const response = await fetch(
-                   `${API_URL}${processedVideo}`
-                 );
+                   setDownloading(false);
+                 };
 
-                 const blob = await response.blob();
+                 xhr.onerror = () => {
 
-                 const url =
-                 window.URL.createObjectURL(blob);
+                   setStatusMsg(
+                     "⚠ Download failed try again"
+                   );
 
-                 const a =
-                 document.createElement("a");
+                   setDownloading(false);
+                 };
 
-                 a.href = url;
-
-                 a.download =
-                   "vivid_edited.mp4";
-
-                 document.body.appendChild(a);
-
-                 a.click();
-
-                 a.remove();
-
-                 window.URL.revokeObjectURL(url);
-
-                 setDownloadCountdown(null);
-
-                 setStatusMsg(
-                   "⬇ Download started successfully"
-                 );
+                 xhr.send();
 
                } catch (err) {
 
                  console.error(err);
 
                  setStatusMsg(
-                   "⚠ Download failed — retry again"
+                   "⚠ Download failed try again"
                  );
 
-               } finally {
-
-               setDownloading(false);
-
+                 setDownloading(false);
                }
              }}
            >
              {downloading
-               ? `DOWNLOADING IN ${downloadCountdown}s`
+               ? `DOWNLOADING IN ${downloadCountdown || "..."}s`
                : "DOWNLOAD MP4"}
            </button>
 
