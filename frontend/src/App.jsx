@@ -561,9 +561,7 @@ const sendRating = async (rating) => {
                }
              }}
            >
-             {downloading
-               ? `DOWNLOADING IN ${downloadCountdown || "..."}s`
-               : "DOWNLOAD MP4"}
+             DOWNLOAD MP4
            </button>
 
             {/* ⭐ Feedback System */}
