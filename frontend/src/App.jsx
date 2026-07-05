@@ -193,8 +193,11 @@ const onDrop = useCallback(
 
       }
 
+      const removed =
+        json.processing?.time_removed_s || 0;
+
       setStatusMsg(
-          "✔️ Video edited successfully"
+        `⚡ VIVID cut ${removed}s of silence automatically`
       );
 
       if (json.processed_video) {

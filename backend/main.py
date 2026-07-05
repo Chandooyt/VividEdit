@@ -24,17 +24,9 @@ PROCESSED_DIR.mkdir(exist_ok=True)  # creates processed/ if missing
 # ── CORS — allows the React frontend (any localhost port) to call this API ──
 app.add_middleware(
     CORSMiddleware,
-
-    allow_origins=[
-        "https://www.vividedit.online",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
-
-    allow_credentials=True,
-
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
-
     allow_headers=["*"],
 )
 
@@ -78,6 +70,17 @@ async def upload_video(
         await file.close()
 
     file_size_mb = round(dest.stat().st_size / (1024 * 1024), 2)
+    if file_size_mb > 100:
+
+        os.remove(dest)
+
+        return JSONResponse(
+            status_code=400,
+            content={
+                "success": False,
+                "message": "Video too large. Max 100MB."
+            }
+        )
     print(f"[VIVID] Saved upload: {dest} ({file_size_mb} MB)")
 
     # ── 3. Run FFmpeg silence-removal processor ─────────────────

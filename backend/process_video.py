@@ -148,7 +148,20 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
 
     for i, seg in enumerate(segments):
 
-        duration = seg["end"] - seg["start"]
+        duration = float(seg["end"] - seg["start"])
+
+        # SAFETY FIXES
+        if duration <= 0:
+           print("[VIVID AI] Skipping invalid duration")
+           continue
+
+        if duration < 0.5:
+           print("[VIVID AI] Skipping tiny segment")
+           continue
+
+        if seg["start"] >= seg["end"]:
+           print("[VIVID AI] Invalid segment timing")
+           continue
 
         # skip tiny broken clips
         if duration < 0.5:
@@ -160,10 +173,10 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
             "ffmpeg",
             "-y",
 
-            "-ss", str(seg["start"]),
-            "-t", str(duration),
+           "-i", input_path,
 
-            "-i", input_path,
+           "-ss", str(seg["start"]),
+           "-t", str(duration),
 
             "-preset", "ultrafast",
 
@@ -175,17 +188,31 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
             str(temp_path),
         ]
 
-        subprocess.run(
+        result = subprocess.run(
             cmd,
-            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
         )
+
+        if result.returncode != 0:
+
+            print("[FFMPEG ERROR]")
+            print(result.stderr)
+
+        continue
 
         # keep only real files
         if temp_path.exists() and temp_path.stat().st_size > 1000:
             temp_files.append(temp_path)
 
     if not temp_files:
-        raise ValueError("All clips were too short.")
+
+        print("[VIVID AI] No valid clips found")
+
+        shutil.copy2(input_path, output_path)
+
+        return
 
     list_file = OUTPUT_DIR / "_concat_list.txt"
 
@@ -259,6 +286,11 @@ def process_video(input_path: str, prompt: str = "") -> dict:
     try:
         # 1. Total duration
         total_duration = get_duration(input_path)
+        if total_duration <= 0:
+            return {
+                "success": False,
+                "message": "Invalid or corrupted video."
+            }
         print(f"[VIVID AI] Video Duration → {total_duration:.2f}s")
 
         # ── VIVID AI ANALYSIS ─────────────────────────
