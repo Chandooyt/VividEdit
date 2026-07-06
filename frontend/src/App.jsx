@@ -37,6 +37,8 @@ export default function App() {
 
   const [previewUrl, setPreviewUrl] = useState("");
   
+  const [videoPreview, setVideoPreview] = useState("")
+  
   useEffect(() => {
 
   return () => {
