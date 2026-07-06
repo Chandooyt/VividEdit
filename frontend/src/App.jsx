@@ -64,7 +64,11 @@ const handleFiles = useCallback((fileList) => {
 
     return;
   }
+  // CREATE VIDEO ELEMENT
+  const video = document.createElement("video");
 
+  video.preload = "metadata";
+  
   // CHECK VIDEO DURATION
  video.onloadedmetadata = () => {
 
