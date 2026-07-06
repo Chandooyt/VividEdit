@@ -378,11 +378,22 @@ const sendRating = async (rating) => {
           <div className="drop-inner">
             {file ? (
               <>
-                <video
-                  className="video-preview"
-                  src={previewUrl}
-                  controls
-                />
+                {videoPreview && (
+                 <video
+                   key={videoPreview}
+                   src={videoPreview}
+                   controls
+                   preload="metadata"
+                   className="w-full rounded-xl"
+                   onLoadedMetadata={(e) => {
+                     console.log("VIDEO LOADED");
+                     console.log("Duration:", e.target.duration);
+                   }}
+                   onError={(e) => {
+                     console.log("VIDEO ERROR:", e);
+                   }}
+                 />
+               )}
 
                 <h2 className="video-file-title">{file.name}</h2>
 
