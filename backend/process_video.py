@@ -65,14 +65,6 @@ def detect_silence(
         stderr=subprocess.PIPE,
         text=True,
     )
-    import os
-
-    if not os.path.exists(output_path):
-
-        return {
-            "success": False,
-            "message": "Rendered video was not created."
-        }
 
     stderr = result.stderr or ""
 
@@ -206,10 +198,10 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
 
         if result.returncode != 0:
 
-            print("[FFMPEG ERROR]")
-            print(result.stderr)
+           print("[FFMPEG ERROR]")
+           print(result.stderr)
 
-        continue
+           continue
 
         # keep only real files
         if temp_path.exists() and temp_path.stat().st_size > 1000:
@@ -251,10 +243,20 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
         output_path,
     ]
 
-    subprocess.run(
+    result = subprocess.run(
         cmd,
-        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
     )
+
+    if result.returncode != 0:
+
+        print("\n========== FINAL FFMPEG ERROR ==========")
+        print(result.stderr)
+        print("========================================\n")
+
+        raise Exception("Final render failed")
 
     # cleanup
     for tf in temp_files:
@@ -375,6 +377,13 @@ def process_video(input_path: str, prompt: str = "") -> dict:
         # 5. Cut & join
         print(f"[VIVID] Rendering Final Edit {len(keep_segments)} segment(s)…")
         cut_and_join(input_path, keep_segments, output_path)
+
+        if not os.path.exists(output_path):
+
+            return {
+                "success": False,
+                "message": "Rendered video was not created."
+            }
 
         # 6. Measure output
         processed_duration = get_duration(output_path)
