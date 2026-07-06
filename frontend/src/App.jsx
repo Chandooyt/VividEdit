@@ -35,24 +35,6 @@ export default function App() {
   const [selectedRating, setSelectedRating] = useState(0);
   const [sendingRating, setSendingRating] = useState(false);
 
-  const [previewUrl, setPreviewUrl] = useState("");
-  
-  const [videoPreview, setVideoPreview] = useState("")
-  
-  useEffect(() => {
-
-  return () => {
-
-    if (previewUrl) {
-
-      URL.revokeObjectURL(previewUrl);
-
-    }
-
-  };
-
-}, [previewUrl]);
-
   /* ── file helpers ── */
 const handleFiles = useCallback((fileList) => {
 
@@ -83,9 +65,6 @@ const handleFiles = useCallback((fileList) => {
     return;
   }
 
-  // CREATE TEMP URL
-  const url = URL.createObjectURL(next);
-
   // CHECK VIDEO DURATION
   const video = document.createElement("video");
 
@@ -107,9 +86,6 @@ const handleFiles = useCallback((fileList) => {
 
     // SAVE FILE
     setFile(next);
-
-    // SAVE PREVIEW
-    setPreviewUrl(url);
 
     // CLEAR OLD STATUS
     setStatusMsg("");
@@ -380,23 +356,6 @@ const sendRating = async (rating) => {
           <div className="drop-inner">
             {file ? (
               <>
-                {videoPreview && (
-                 <video
-                   key={videoPreview}
-                   src={videoPreview}
-                   controls
-                   preload="metadata"
-                   className="w-full rounded-xl"
-                   onLoadedMetadata={(e) => {
-                     console.log("VIDEO LOADED");
-                     console.log("Duration:", e.target.duration);
-                   }}
-                   onError={(e) => {
-                     console.log("VIDEO ERROR:", e);
-                   }}
-                 />
-               )}
-
                 <h2 className="video-file-title">{file.name}</h2>
 
                 <p className="drop-sub">
