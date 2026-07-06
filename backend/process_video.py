@@ -65,6 +65,14 @@ def detect_silence(
         stderr=subprocess.PIPE,
         text=True,
     )
+    import os
+
+    if not os.path.exists(output_path):
+
+        return {
+            "success": False,
+            "message": "Rendered video was not created."
+        }
 
     stderr = result.stderr or ""
 

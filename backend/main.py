@@ -15,6 +15,13 @@ from process_video import process_video
 
 # ── Setup ──────────────────────────────────────────────────────
 app = FastAPI(title="VIVID Upload API")
+from fastapi.staticfiles import StaticFiles
+
+app.mount(
+    "/processed",
+    StaticFiles(directory="processed"),
+    name="processed"
+)
 
 UPLOAD_DIR    = Path("uploads")
 PROCESSED_DIR = Path("processed")
