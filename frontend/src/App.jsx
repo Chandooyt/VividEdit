@@ -354,15 +354,19 @@ const sendRating = async (rating) => {
           aria-label="Drag and drop raw footage, max 60 seconds,"
         >
           <div className="drop-inner">
-            {file ? (
-              <>
-                <h2 className="video-file-title">{file.name}</h2>
+           {file ? (
 
-                <p className="drop-sub">
-                  {(file.size / (1024 * 1024)).toFixed(1)} MB · ready
-                </p>
-              </>
-            ) : (
+            <>
+              <h2 className="video-file-title">
+                {file.name}
+              </h2>
+
+              <p className="drop-sub">
+                {(file.size / (1024 * 1024)).toFixed(1)} MB · ready
+              </p>
+            </>
+
+          ) : (
 
               <>
                 <h2 className="drop-title">
