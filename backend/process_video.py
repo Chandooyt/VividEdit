@@ -204,8 +204,15 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
             continue
 
         # keep only real files
-        if temp_path.exists() and temp_path.stat().st_size > 1000:
+        if (
+            temp_path.exists()
+            and temp_path.stat().st_size > 1000
+        ):
             temp_files.append(temp_path)
+
+            print(f"[VIVID AI] Added clip → {temp_path}")
+        else:
+            print(f"[VIVID AI] Clip failed → {temp_path}")  
 
     if not temp_files:
 
@@ -250,6 +257,11 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
         text=True
     )
 
+    print(f"[VIVID AI] Final output exists → {os.path.exists(output_path)}")
+
+    if os.path.exists(output_path):
+        print(f"[VIVID AI] Final size → {os.path.getsize(output_path)} bytes")
+        
     if result.returncode != 0:
 
         print("\n========== FINAL FFMPEG ERROR ==========")
