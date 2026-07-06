@@ -387,27 +387,36 @@ def process_video(input_path: str, prompt: str = "") -> dict:
 
     except subprocess.CalledProcessError as e:
 
-        error_text = str(e)
+        # REAL ERROR → terminal only
+        print("\n========== VIVID BACKEND ERROR ==========")
 
-        if e.stderr:
+        try:
+            print(e.stderr)
 
-            try:
-                error_text = e.stderr
+        except:
+            print(str(e))
 
-            except:
-                error_text = str(e)
+        print("=========================================\n")
 
-        print(f"[VIVID AI ERROR] {error_text}")
-
+        # USER ONLY SEES THIS
         return {
             "success": False,
-            "message": error_text
+            "message": "Something went wrong during editing."
         }
 
-    except Exception as e:
-        print(f"[VIVID] ERROR: {e}")
-        return {"success": False, "message": str(e)}
 
+    except Exception as e:
+
+        # REAL ERROR → terminal only
+        print("\n========== VIVID GENERAL ERROR ==========")
+        print(str(e))
+        print("=========================================\n")
+
+        # USER ONLY SEES THIS
+        return {
+            "success": False,
+            "message": "Something went wrong during editing."
+        }
 
 # ──────────────────────────────────────────────────────────────
 # 6.  CLI  — run directly:  python processor.py my_video.mp4

@@ -52,7 +52,7 @@ export default function App() {
 }, [previewUrl]);
 
   /* ── file helpers ── */
-  const handleFiles = useCallback((fileList) => {
+const handleFiles = useCallback((fileList) => {
 
   const next = fileList?.[0];
 
@@ -75,25 +75,54 @@ export default function App() {
   if (next.size > MAX_SIZE) {
 
     setStatusMsg(
-      "✗ Video too large (Max: 100MB)"
+      "✗ Video exceeds 100MB limit"
     );
 
     return;
   }
 
-  // CREATE SAFE VIDEO URL
+  // CREATE TEMP URL
   const url = URL.createObjectURL(next);
 
-  // STORE FILE
-  setFile(next);
+  // CHECK VIDEO DURATION
+  const video = document.createElement("video");
 
-  // STORE PREVIEW URL
-  setPreviewUrl(url);
+  video.preload = "metadata";
 
-  // RESET OLD STATES
-  setStatusMsg("");
+  video.onloadedmetadata = () => {
 
-  setProcessedVideo("");
+    window.URL.revokeObjectURL(video.src);
+
+    // MORE THAN 60 SECONDS
+    if (video.duration > 60) {
+
+      setStatusMsg(
+        "✗ Video exceeds 60 second limit"
+      );
+
+      return;
+    }
+
+    // SAVE FILE
+    setFile(next);
+
+    // SAVE PREVIEW
+    setPreviewUrl(url);
+
+    // CLEAR OLD STATUS
+    setStatusMsg("");
+
+    setProcessedVideo("");
+  };
+
+  video.onerror = () => {
+
+    setStatusMsg(
+      "✗ Invalid or corrupted video file"
+    );
+  };
+
+  video.src = url;
 
 }, []);
 
@@ -270,11 +299,13 @@ const onDrop = useCallback(
   else {
 
     setStatusMsg(
-      "❌ Something went wrong during editing"
+      "Something went wrong during editing"
     );
 
   }
-} finally {
+} 
+
+  finally {
       setRunning(false);
     }
   }, [file, prompt, running]);
@@ -342,7 +373,7 @@ const sendRating = async (rating) => {
           onKeyDown={(e) =>
             (e.key === "Enter" || e.key === " ") && inputRef.current?.click()
           }
-          aria-label="Drag and drop raw footage, max 60 seconds"
+          aria-label="Drag and drop raw footage, max 60 seconds,"
         >
           <div className="drop-inner">
             {file ? (
@@ -367,7 +398,17 @@ const sendRating = async (rating) => {
                   <br />
                   RAW FOOTAGE
                 </h2>
-                <p className="drop-sub">(Max: 60 Seconds)</p>
+               <div className="drop-sub-wrap">
+
+                <p className="drop-sub">
+                  MAX: 60 SECONDS
+                </p>
+
+                <p className="drop-sub-small">
+                  MAX: 100 MB
+                </p>
+
+               </div>
               </>
             )}
           </div>
@@ -793,7 +834,37 @@ function Styles() {
 
         text-align: center;
       }
-      .drop-sub  { margin: 0; color: #9aa0b5; letter-spacing: .08em; font-size: clamp(12px,1.6vw,14px); }
+     .drop-sub-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+
+.drop-sub {
+  margin: 0;
+
+  color: #22d3ee;
+
+  letter-spacing: .15em;
+
+  font-size: clamp(16px,2vw,20px);
+
+  font-weight: bold;
+
+  text-shadow:
+    0 0 10px rgba(34,211,238,.5);
+}
+
+.drop-sub-small {
+  margin: 0;
+
+  color: #9aa0b5;
+
+  letter-spacing: .12em;
+
+  font-size: clamp(12px,1.5vw,14px);
+}
 
       .video-preview {
         width: 100%;
