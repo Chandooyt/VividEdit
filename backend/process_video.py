@@ -198,10 +198,10 @@ def cut_and_join(input_path: str, segments: list[dict], output_path: str) -> Non
 
         if result.returncode != 0:
 
-           print("[FFMPEG ERROR]")
-           print(result.stderr)
+            print("[FFMPEG ERROR]")
+            print(result.stderr)
 
-           continue
+            continue
 
         # keep only real files
         if temp_path.exists() and temp_path.stat().st_size > 1000:
