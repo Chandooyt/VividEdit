@@ -66,32 +66,26 @@ const handleFiles = useCallback((fileList) => {
   }
 
   // CHECK VIDEO DURATION
-  const video = document.createElement("video");
+ video.onloadedmetadata = () => {
 
-  video.preload = "metadata";
+  // MORE THAN 60 SECONDS
+  if (video.duration > 60) {
 
-  video.onloadedmetadata = () => {
+    setStatusMsg(
+      "✗ Video exceeds 60 second limit"
+    );
 
-    window.URL.revokeObjectURL(video.src);
+    return;
+  }
 
-    // MORE THAN 60 SECONDS
-    if (video.duration > 60) {
+  // SAVE FILE
+  setFile(next);
 
-      setStatusMsg(
-        "✗ Video exceeds 60 second limit"
-      );
+  // CLEAR STATUS
+  setStatusMsg("");
 
-      return;
-    }
-
-    // SAVE FILE
-    setFile(next);
-
-    // CLEAR OLD STATUS
-    setStatusMsg("");
-
-    setProcessedVideo("");
-  };
+  setProcessedVideo("");
+};
 
   video.onerror = () => {
 
@@ -100,7 +94,7 @@ const handleFiles = useCallback((fileList) => {
     );
   };
 
-  video.src = url;
+  video.src = URL.createObjectURL(next);
 
 }, []);
 
