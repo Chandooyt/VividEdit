@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from process_video import process_video
+from database import SessionLocal, FeedbackDB
 
 from datetime import datetime
 
@@ -176,31 +177,25 @@ async def upload_video(
 @app.post("/feedback")
 async def save_feedback(data: Feedback):
 
-    with open("feedback.txt", "a", encoding="utf-8") as f:
+    db = SessionLocal()
 
-        f.write("\n")
-        f.write("=" * 60 + "\n")
-        f.write("🟣 VIVID BETA TESTER\n")
-        f.write(f"Date: {datetime.now()}\n")
-        f.write(f"Rating: {data.rating}/5 ⭐\n")
-        f.write("\n")
+    feedback = FeedbackDB(
+        rating=data.rating,
+        liked=data.liked,
+        frustrated=data.frustrated,
+        feature=data.feature
+    )
 
-        f.write("👍 What did you like?\n")
-        f.write(data.liked + "\n\n")
+    db.add(feedback)
 
-        f.write("😡 What frustrated you?\n")
-        f.write(data.frustrated + "\n\n")
+    db.commit()
 
-        f.write("💡 Feature request\n")
-        f.write(data.feature + "\n")
-
-        f.write("=" * 60 + "\n")
+    db.close()
 
     return {
         "success": True,
         "message": "Thanks for being a VIVID Beta Tester!"
     }
-
 
 # ── AUTO DELETE PROCESSED VIDEOS ─────────────────────────────
 def auto_delete_processed(
