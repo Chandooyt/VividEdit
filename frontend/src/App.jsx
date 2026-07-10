@@ -35,6 +35,11 @@ export default function App() {
   const [selectedRating, setSelectedRating] = useState(0);
   const [sendingRating, setSendingRating] = useState(false);
 
+  const [liked, setLiked] = useState("");
+  const [frustrated, setFrustrated] = useState("");
+  const [feature, setFeature] = useState("");
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+
   /* ── file helpers ── */
 const handleFiles = useCallback((fileList) => {
 
@@ -288,32 +293,56 @@ const onDrop = useCallback(
 
 
 
-const sendRating = async (rating) => {
+const sendFeedback = async () => {
+
+  if (selectedRating === 0) {
+    setFeedbackMsg("Please select a rating.");
+    return;
+  }
+
+  if (!liked.trim() || !frustrated.trim() || !feature.trim()) {
+    setFeedbackMsg("Please answer all questions.");
+    return;
+  }
 
   try {
 
-    setSelectedRating(rating);
+    setSendingRating(true);
 
-    await fetch(`${API_URL}/feedback`, {
-
+    const response = await fetch(`${API_URL}/feedback`, {
       method: "POST",
-
       headers: {
         "Content-Type": "application/json",
       },
 
-      body: JSON.stringify({
-        rating,
-      }),
+     body: JSON.stringify({
+         rating: selectedRating,
+         liked: liked,
+         frustrated: frustrated,
+         feature: feature,
+     }),
     });
 
-    setFeedbackMsg("✓ Thanks for your feedback!");
+    const json = await response.json();
+
+    setFeedbackMsg(
+      "🟣 Thanks for being a VIVID Beta Tester! Your feedback will shape VIVID 2.0."
+    );
+
+    setLiked("");
+    setFrustrated("");
+    setFeature("");
+    setSelectedRating(0);
+    setFeedbackSubmitted(true);
 
   } catch (err) {
 
-    console.error("Feedback error:", err);
+    console.error(err);
+    setFeedbackMsg("Feedback failed.");
 
-    setFeedbackMsg("✗ Feedback failed");
+  } finally {
+
+    setSendingRating(false);
 
   }
 };
@@ -584,40 +613,82 @@ const sendRating = async (rating) => {
 
             {/* ⭐ Feedback System */}
             <div className="feedback-box">
+
               <h3 className="feedback-title">
                 How was your edit?
               </h3>
 
               <div className="feedback-stars">
-                {[1,2,3,4,5].map((star) => (
+                {[1,2,3,4,5].map((star)=>(
+                  <button
+                    key={star}
+                    onClick={()=>setSelectedRating(star)}
+                    className={`star-btn ${
+                    selectedRating>=star
+                    ? "star-active"
+                    : ""
+                }`}
+              >
+                ★
+              </button>
+            ))}
+          </div>
+          {!feedbackSubmitted && (
+            <>
+              <label className="feedback-label">
+                What did you like most?
+              </label>
+              <textarea
+                className="feedback-input"
+                value={liked}
+                onChange={(e) => setLiked(e.target.value)}
+              />
 
-                 <button
-                   key={star}
+              <label className="feedback-label">
+                What frustrated you?
+              </label>
+              <textarea
+                className="feedback-input"
+                value={frustrated}
+                onChange={(e) => setFrustrated(e.target.value)}
+              />
 
-                   onClick={() => sendRating(star)}
+              <label className="feedback-label">
+                What feature would you love in VIVID 2.0?
+              </label>
+              <textarea
+                className="feedback-input"
+                value={feature}
+                onChange={(e) => setFeature(e.target.value)}
+              />
 
-                   className={`star-btn ${
-                     selectedRating >= star
-                       ? "star-active"
-                       : ""
-                   }`}
-                  >
-                   ★
-                 </button>
+              <button
+                className="download-btn"
+                onClick={sendFeedback}
+                disabled={sendingRating}
+              >
+                {sendingRating ? "Submitting..." : "Submit Feedback"}
+              </button>
+            </>
+          )}
 
-                ))}
+          {feedbackMsg && (
+           <p
+              className="feedback-msg"
+              style={{
+                color: feedbackSubmitted ? "#00ff88" : "#22d3ee",
+                fontWeight: "bold",
+              }}
+           >
+              {feedbackMsg}
+            </p>
+          )}
+ 
+          </div>  
+          </> 
+          )}      
 
-              </div>
-              {feedbackMsg && (
-                <p className="feedback-msg">
-                  {feedbackMsg}
-                </p>
-              )}
-            </div>
-          </>
-        )}
-
-      </main>
+    </main>
 
       <footer className="vivid-footer">
         VIVID © 2026 • Built by Mohid Malik
@@ -1119,6 +1190,37 @@ transform: scale(1.15);
 
   text-align: center;
 
+}
+
+.feedback-label {
+  color: #22d3ee;
+  font-size: 14px;
+  margin-top: 12px;
+  margin-bottom: 6px;
+  display: block;
+  text-align: left;
+  width: 100%;
+  max-width: 500px;
+}
+
+.feedback-input {
+  width: 100%;
+  max-width: 500px;
+  min-height: 70px;
+  background: rgba(8,8,14,.85);
+  border: 1px solid rgba(34,211,238,.35);
+  border-radius: 10px;
+  color: white;
+  padding: 12px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.feedback-input:focus {
+  border-color: #22d3ee;
+  box-shadow: 0 0 10px rgba(34,211,238,.4);
 }
 
 /* ⭐ FEEDBACK CSS END */

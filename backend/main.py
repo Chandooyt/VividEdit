@@ -13,6 +13,8 @@ from pydantic import BaseModel
 
 from process_video import process_video
 
+from datetime import datetime
+
 # ── Setup ──────────────────────────────────────────────────────
 app = FastAPI(title="VIVID Upload API")
 from fastapi.staticfiles import StaticFiles
@@ -43,6 +45,9 @@ app.mount("/processed", StaticFiles(directory="processed"), name="processed")
 
 class Feedback(BaseModel):
     rating: int
+    liked: str
+    frustrated: str
+    feature: str
 
 
 # ── Routes ─────────────────────────────────────────────────────
@@ -171,11 +176,29 @@ async def upload_video(
 @app.post("/feedback")
 async def save_feedback(data: Feedback):
 
-    with open("feedback.txt", "a") as f:
-        f.write(f"Rating: {data.rating}\n")
+    with open("feedback.txt", "a", encoding="utf-8") as f:
+
+        f.write("\n")
+        f.write("=" * 60 + "\n")
+        f.write("🟣 VIVID BETA TESTER\n")
+        f.write(f"Date: {datetime.now()}\n")
+        f.write(f"Rating: {data.rating}/5 ⭐\n")
+        f.write("\n")
+
+        f.write("👍 What did you like?\n")
+        f.write(data.liked + "\n\n")
+
+        f.write("😡 What frustrated you?\n")
+        f.write(data.frustrated + "\n\n")
+
+        f.write("💡 Feature request\n")
+        f.write(data.feature + "\n")
+
+        f.write("=" * 60 + "\n")
 
     return {
-        "success": True
+        "success": True,
+        "message": "Thanks for being a VIVID Beta Tester!"
     }
 
 
