@@ -11,7 +11,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
  *  3. No visual redesign — every colour, animation and glow is preserved.
  */
 
-const API_URL = "https://p01--vivid-backend--5ykddwtmxz7v.code.run";
+const API_URL = "http://127.0.0.1:8000";
 const DEFAULT_PROMPT =
   "Write your prompt.";
 
