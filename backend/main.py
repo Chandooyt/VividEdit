@@ -197,6 +197,21 @@ async def save_feedback(data: Feedback):
         "message": "Thanks for being a VIVID Beta Tester!"
     }
 
+@app.get("/feedback")
+async def get_feedback():
+
+    db = SessionLocal()
+
+    feedback = (
+        db.query(FeedbackDB)
+        .order_by(FeedbackDB.created_at.desc())
+        .all()
+    )
+
+    db.close()
+
+    return feedback
+    
 # ── AUTO DELETE PROCESSED VIDEOS ─────────────────────────────
 def auto_delete_processed(
     file_path: str,
