@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import AdminDashboard from "./admin/AdminDashboard";
 
 /**
  * VIVID — Agentic AI Video Editor
@@ -39,6 +40,9 @@ export default function App() {
   const [frustrated, setFrustrated] = useState("");
   const [feature, setFeature] = useState("");
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+
+  const [showAdmin, setShowAdmin] = useState(false);
+  const ADMIN_KEY = "IAmBillionaire";
 
   /* ── file helpers ── */
 const handleFiles = useCallback((fileList) => {
@@ -346,6 +350,39 @@ const sendFeedback = async () => {
 
   }
 };
+
+useEffect(() => {
+  const handleKeyDown = (e) => {
+    console.log("KEY PRESSED:", e.key);
+
+    if (
+      e.ctrlKey &&
+      e.altKey &&
+      e.shiftKey &&
+      e.key.toLowerCase() === "v"
+    ) {
+      const enteredKey = window.prompt("Enter Admin Key");
+
+      if (enteredKey === ADMIN_KEY) {
+        setShowAdmin(true);
+      } else {
+        alert("Wrong Admin Key");
+      }
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+
+  return () => {
+    window.removeEventListener("keydown", handleKeyDown);
+  };
+}, []);
+
+if (showAdmin) {
+
+  return <AdminDashboard />;
+
+}
 
   return (
     <div className="vivid-root">
