@@ -338,6 +338,7 @@ const sendFeedback = async () => {
     setFeature("");
     setSelectedRating(0);
     setFeedbackSubmitted(true);
+    localStorage.setItem("vivid_feedback_sent", "true");
 
   } catch (err) {
 
@@ -655,21 +656,23 @@ if (showAdmin) {
                 How was your edit?
               </h3>
 
-              <div className="feedback-stars">
-                {[1,2,3,4,5].map((star)=>(
-                  <button
-                    key={star}
-                    onClick={()=>setSelectedRating(star)}
-                    className={`star-btn ${
-                    selectedRating>=star
-                    ? "star-active"
-                    : ""
-                }`}
-              >
-                ★
-              </button>
-            ))}
-          </div>
+              {!feedbackSubmitted && (
+               <div className="feedback-stars">
+                 {[1,2,3,4,5].map((star)=>(
+                   <button
+                     key={star}
+                     onClick={() => setSelectedRating(star)}
+                     className={`star-btn ${
+                       selectedRating >= star
+                         ? "star-active"
+                         : ""
+                     }`}
+                   >
+                     ★
+                   </button>
+                 ))}
+               </div>
+             )}
           {!feedbackSubmitted && (
             <>
               <label className="feedback-label">
@@ -720,10 +723,41 @@ if (showAdmin) {
               {feedbackMsg}
             </p>
           )}
+
+           {feedbackSubmitted && (
+            <div
+              style={{
+                marginTop: "20px",
+                padding: "20px",
+                borderRadius: "14px",
+                background: "rgba(0,255,140,.08)",
+                border: "1px solid rgba(0,255,140,.25)",
+                textAlign: "center",
+              }}
+            >
+              <h2
+                style={{
+                  color: "#00ff88",
+                  marginBottom: "10px",
+                }}
+              >
+                ✅ Feedback Submitted
+              </h2>
+
+              <p
+                style={{
+                  color: "#b5f7d5",
+                  margin: 0,
+                }}
+              >
+                Thank you for helping improve VIVID.
+              </p>
+            </div>
+          )} 
  
           </div>  
           </> 
-          )}      
+          )}    
 
     </main>
 
