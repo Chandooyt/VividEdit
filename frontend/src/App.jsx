@@ -652,9 +652,11 @@ if (showAdmin) {
             {/* ⭐ Feedback System */}
             <div className="feedback-box">
 
-              <h3 className="feedback-title">
-                How was your edit?
-              </h3>
+              {!feedbackSubmitted && (
+               <h3 className="feedback-title">
+                 How was your edit?
+               </h3>
+             )}
 
               {!feedbackSubmitted && (
                <div className="feedback-stars">
@@ -712,14 +714,14 @@ if (showAdmin) {
             </>
           )}
 
-          {feedbackMsg && (
-           <p
+          {feedbackMsg && !feedbackSubmitted && (
+            <p
               className="feedback-msg"
               style={{
-                color: feedbackSubmitted ? "#00ff88" : "#22d3ee",
+                color: "#22d3ee",
                 fontWeight: "bold",
               }}
-           >
+             >
               {feedbackMsg}
             </p>
           )}
@@ -750,7 +752,7 @@ if (showAdmin) {
                   margin: 0,
                 }}
               >
-                Thank you for helping improve VIVID.
+                Thanks for helping improve VIVID. Your feedback has been received successfully.
               </p>
             </div>
           )} 
