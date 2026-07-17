@@ -56,7 +56,7 @@ const handleFiles = useCallback((fileList) => {
   if (!next.type.startsWith("video/")) {
 
     setStatusMsg(
-      "✗ Please upload a video file"
+      "🎥 Please select a valid video file."
     );
 
     return;
@@ -68,7 +68,7 @@ const handleFiles = useCallback((fileList) => {
   if (next.size > MAX_SIZE) {
 
     setStatusMsg(
-      "✗ Video exceeds 100MB limit"
+      "📦 Video exceeds the 100 MB upload limit."
     );
 
     return;
@@ -85,7 +85,7 @@ const handleFiles = useCallback((fileList) => {
   if (video.duration > 60) {
 
     setStatusMsg(
-      "✗ Video exceeds 60 second limit"
+      "⏱ Video exceeds the 60 second limit."
     );
 
     return;
@@ -138,7 +138,7 @@ const onDrop = useCallback(
       return;
 
     }
-    
+
     setRunning(true);
     setUploadProgress(0);
     setStatusMsg("🧠 Analyzing speech...");
