@@ -494,7 +494,7 @@ if (showAdmin) {
         <button
           className={`run-btn${running ? " is-running" : ""}`}
           onClick={runEngine}
-          disabled={running}
+          disabled={running || !file}
         >
           <span className="run-btn-label">
             {running ? "⚙ ENGINE RUNNING…" : "🚀 RUN AUTONOMOUS ENGINE"}
