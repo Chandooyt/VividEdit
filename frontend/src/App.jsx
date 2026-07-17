@@ -1060,7 +1060,14 @@ function Styles() {
            12px 0 46px -4px rgba(34,211,238,.9);
       }
       .run-btn:active:not(:disabled) { transform: translateY(0); }
-      .run-btn:disabled { cursor: progress; filter: saturate(.8) brightness(.95); }
+      .run-btn:disabled {
+        cursor: not-allowed;
+        opacity: .55;
+        filter: grayscale(.2);
+        transform: none;
+        box-shadow:
+        0 0 10px rgba(255,255,255,.08);
+      }
       .run-btn.is-running .run-btn-label { animation: pulse 1.1s ease-in-out infinite; }
 
       @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
