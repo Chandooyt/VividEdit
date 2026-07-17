@@ -130,6 +130,15 @@ const onDrop = useCallback(
   /* ── backend call ── */
   const runEngine = useCallback(async () => {
     if (running) return;
+    // No video selected
+    if (!file) {
+
+      setStatusMsg("📹 Please upload a video before running VIVID.");
+
+      return;
+
+    }
+    
     setRunning(true);
     setUploadProgress(0);
     setStatusMsg("🧠 Analyzing speech...");
