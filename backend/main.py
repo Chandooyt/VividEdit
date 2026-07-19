@@ -211,6 +211,34 @@ async def get_feedback():
     db.close()
 
     return feedback
+
+
+@app.delete("/feedback/{feedback_id}")
+async def delete_feedback(feedback_id: int):
+
+    db = SessionLocal()
+
+    feedback = (
+        db.query(FeedbackDB)
+        .filter(FeedbackDB.id == feedback_id)
+        .first()
+    )
+
+    if feedback is None:
+        db.close()
+        raise HTTPException(
+            status_code=404,
+            detail="Feedback not found"
+        )
+
+    db.delete(feedback)
+    db.commit()
+    db.close()
+
+    return {
+        "success": True,
+        "message": "Feedback deleted"
+    }
     
 # ── AUTO DELETE PROCESSED VIDEOS ─────────────────────────────
 def auto_delete_processed(
