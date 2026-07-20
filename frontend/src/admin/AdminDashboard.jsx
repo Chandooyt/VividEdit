@@ -12,6 +12,11 @@ import {
   FiTrendingUp,
 } from "react-icons/fi";
 
+import Sidebar from "./components/Sidebar";
+import "./styles/dashboard.css";
+
+import Header from "./components/Header";
+
 const API_URL = "https://p01--vivid-backend--5ykddwtmxz7v.code.run";
 
 export default function AdminDashboard() {
@@ -90,50 +95,8 @@ export default function AdminDashboard() {
       }}
     >
 
-      <aside
-        style={{
-          width: "260px",
-          background: "#111827",
-          padding: "30px 20px",
-          borderRight: "1px solid #1f2937",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
+      <Sidebar />
 
-        <h2
-          style={{
-            color: "#8b5cf6",
-            marginBottom: "50px",
-            fontSize: "28px",
-            fontWeight: "bold",
-          }}
-        >
-          VIVID
-        </h2>
-
-        <MenuItem
-          icon={<FiGrid size={20} />}
-          text="Dashboard"
-          active
-        />
-
-        <MenuItem
-          icon={<FiMessageSquare size={20} />}
-          text="Feedback"
-        />
-
-        <MenuItem
-         icon={<FiBarChart2 size={20} />}
-          text="Analytics"
-        />
-
-        <MenuItem
-          icon={<FiSettings size={20} />}
-          text="Settings"
-        />
-
-      </aside>
       <div
         style={{
           flex: 1,
@@ -142,166 +105,64 @@ export default function AdminDashboard() {
         }}
       >
 
-     <div
-       style={{
-         display: "flex",
-         justifyContent: "space-between",
-         alignItems: "center",
-         padding: "28px 35px",
-         borderBottom: "1px solid #1f2937",
-       }}
-     >
+      <Header />
 
-       <div>
-         <h1
-           style={{
-             margin: 0,
-             fontSize: "34px",
-             fontWeight: "700",
-           }}
-         >
-           Dashboard
-        </h1>
-
-         <p
-           style={{
-             marginTop: "8px",
-             color: "#94a3b8",
-           }}
-         >
-           Welcome back, Admin! 👋
-         </p>
-       </div>
-
-       <div
-         style={{
-           display: "flex",
-           alignItems: "center",
-           gap: "18px",
-         }}
-       >
-
-         {/* Search */}
-
-         <div
-           style={{
-             display: "flex",
-             alignItems: "center",
-             background: "#111827",
-             border: "1px solid #27272a",
-             borderRadius: "15px",
-             padding: "12px 18px",
-             width: "420px",
-           }}
-         >
-
-           <span
-             style={{
-              color: "#888",
-              fontSize: "18px",
-            }}
-          >
-           <FiSearch
-             size={18}
-             color="#8b8b8b"
-           />
-          </span>
-
-           <input
-             placeholder="Search anything..."
-             style={{
-               background: "transparent",
-               border: "none",
-               outline: "none",
-               marginLeft: "12px",
-               color: "white",
-               width: "100%",
-               fontSize: "15px",
-             }}
-           />
-
-         </div>
-
-         {/* Bell */}
-
-         <div
-           style={{
-             width: "48px",
-             height: "48px",
-             borderRadius: "50%",
-             background: "#111827",
-             display: "flex",
-             justifyContent: "center",
-             alignItems: "center",
-             cursor: "pointer",
-           }}
-          >
-            <span style={{ fontSize: "20px" }}>
-           <FiBell size={20} />
-            </span>
-          </div>
-
-         {/* Avatar */}
-
-         <div
-           style={{
-             width: "50px",
-             height: "50px",
-             borderRadius: "50%",
-             background: "#6d28d9",
-             display: "flex",
-             justifyContent: "center",
-             alignItems: "center",
-             fontWeight: "bold",
-             fontSize: "22px",
-           }}
-         >
-           V
-         </div>
-
-       </div>
-
-     </div>
+    <div
+      style={{
+        padding: "30px",
+        overflowY: "auto",
+        flex: 1,
+      }}
+    >
 
       <div
         style={{
           display: "grid",
-          padding: "35px",
-          gridTemplateColumns: "repeat(3,1fr)",
-          gap: "28px",
-          marginBottom: "40px",
+          gridTemplateColumns: "repeat(2, 1fr)",
+          gap: "24px",
+          marginBottom: "35px",
         }}
       >
-        <StatCard
-          title="Total Feedback"
-          value={feedback.length}
-          color="#8b5cf6"
-          icon={<FiUsers size={24} />}
-        />
-
-        <StatCard
-          title="Average Rating"
-          value={
-            feedback.length
-              ? (
-                  feedback.reduce((a, b) => a + b.rating, 0) /
-                  feedback.length
-                ).toFixed(1)
-              : "0"
-          }
-          color="#22d3ee"
-          icon={<FiStar size={24} />}
-        />
-
-        <StatCard
-          title="5 Star Reviews"
-          value={
-            feedback.filter(f => f.rating === 5).length
-          }
-          color="#10b981"
-          icon={<FiTrendingUp size={24} />}
-        />
       </div>
+
+  <StatCard
+    title="Total Feedback"
+    value={feedback.length}
+    color="#8b5cf6"
+    icon={<FiUsers />}
+  />
+
+  <StatCard
+    title="Average Rating"
+    value={
+      feedback.length
+        ? (
+            feedback.reduce((a, b) => a + b.rating, 0) /
+            feedback.length
+          ).toFixed(1)
+        : "0"
+    }
+    color="#06b6d4"
+    icon={<FiStar />}
+  />
+
+  <StatCard
+    title="5 Star Reviews"
+    value={
+      feedback.filter(f => f.rating === 5).length
+    }
+    color="#22c55e"
+    icon={<FiTrendingUp />}
+  />
+
+  <StatCard
+    title="Beta Users"
+    value={feedback.length}
+    color="#f59e0b"
+    icon={<FiMessageSquare />}
+  />
+
+</div>
 
 <div
   style={{
