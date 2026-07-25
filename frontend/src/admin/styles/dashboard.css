@@ -134,3 +134,103 @@
     gap:12px;
 
 }
+
+.activity-card{
+    background:#151b2d;
+    border-radius:24px;
+    border:1px solid rgba(255,255,255,.08);
+    padding:28px;
+    color:white;
+    margin-bottom:35px;
+}
+
+.activity-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.activity-header h2{
+    margin:0;
+}
+
+.activity-header button{
+    background:#1d2440;
+    color:white;
+    border:none;
+    border-radius:12px;
+    padding:8px 16px;
+    cursor:pointer;
+}
+
+.activity-item{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    padding:16px 0;
+    border-bottom:1px solid rgba(255,255,255,.05);
+}
+
+.activity-item:last-child{
+    border:none;
+}
+
+.activity-icon{
+    width:52px;
+    height:52px;
+    border-radius:16px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#202845;
+    font-size:22px;
+}
+
+.activity-info{
+    flex:1;
+}
+
+.activity-info h3{
+    margin:0;
+    font-size:16px;
+}
+
+.activity-info p{
+    margin-top:4px;
+    color:#94a3b8;
+    font-size:13px;
+}
+
+.activity-item span{
+    color:#94a3b8;
+    font-size:12px;
+}
+
+/* Dashboard Layout */
+
+.dashboard-grid{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:28px;
+    margin-bottom:35px;
+    align-items:start;
+}
+
+.dashboard-left{
+    display:flex;
+    flex-direction:column;
+}
+
+.dashboard-right{
+    display:flex;
+    flex-direction:column;
+}
+
+@media (max-width:1100px){
+
+.dashboard-grid{
+    grid-template-columns:1fr;
+}
+
+}

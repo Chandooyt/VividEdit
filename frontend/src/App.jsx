@@ -855,7 +855,13 @@ function Styles() {
         align-items: flex-start;
       }
 
-      .logo { display: inline-flex; align-items: center; gap: 14px; }.header-content {
+      .logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.header-content {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -882,17 +888,14 @@ function Styles() {
 
       /* ── Main stage — vertically + horizontally centred ── */
       .vivid-stage {
-        position: relative; z-index: 2;
-        flex: 1;                          /* takes all remaining height */
-        display: flex;
-        flex-direction: column;
-        align-items: center;              /* horizontal centre */
-        justify-content: center;          /* vertical centre   */
-        gap: clamp(22px,3.5vw,34px);
-        width: 100%;
-        padding: clamp(6px,2vw,16px) clamp(20px,5vw,40px) clamp(40px,6vw,64px);
-      }
-
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;   /* instead of center */
+    gap: 28px;
+    padding-top: 0;
+}
       /* ── Drop zone ── */
       .drop-zone {
         position: relative;
