@@ -1,22 +1,24 @@
 export default function FeedbackTable({
-  feedback = [],
+  feedback,
   deleteFeedback,
 }) {
   return (
     <div
       style={{
         background: "#151b2d",
-        borderRadius: 24,
-        padding: 30,
+        borderRadius: "24px",
+        padding: "30px",
         border: "1px solid rgba(255,255,255,.08)",
-        marginBottom: 35,
+        marginBottom: "35px",
       }}
     >
       <h2
         style={{
-          color: "#fff",
-          marginBottom: 30,
-          fontWeight: 700,
+          marginTop: 0,
+          marginBottom: "25px",
+          fontSize: "24px",
+          fontWeight: "700",
+          color: "white",
         }}
       >
         Recent Feedback
@@ -27,118 +29,114 @@ export default function FeedbackTable({
           No feedback yet.
         </p>
       ) : (
-        feedback.map((item) => (
-          <div
-            key={item.id}
-            style={{
-              background: "#1b2338",
-              border: "1px solid rgba(139,92,246,.25)",
-              borderRadius: 18,
-              padding: 22,
-              marginBottom: 20,
-              transition: ".25s",
-              boxShadow:
-                "0 0 20px rgba(139,92,246,.10)",
-            }}
-          >
-            {/* Header */}
-
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "18px",
+          }}
+        >
+          {feedback.map((item) => (
             <div
+              key={item.id}
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: 18,
+                background: "#111827",
+                border: "1px solid rgba(255,255,255,.08)",
+                borderRadius: "18px",
+                padding: "22px",
               }}
             >
-              <div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "18px",
+                }}
+              >
+                <div>
+                  <h3
+                    style={{
+                      margin: 0,
+                      color: "white",
+                    }}
+                  >
+                    {item.name || "Anonymous"}
+                  </h3>
 
-                <h3
+                  <div
+                    style={{
+                      color: "#facc15",
+                      marginTop: "6px",
+                    }}
+                  >
+                    ⭐ {item.rating}/5
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => deleteFeedback(item.id)}
                   style={{
-                    color: "#fff",
-                    margin: 0,
+                    background: "#ef4444",
+                    color: "white",
+                    border: "none",
+                    padding: "10px 18px",
+                    borderRadius: "10px",
+                    cursor: "pointer",
                   }}
                 >
-                  👤 {item.name}
-                </h3>
+                  Delete
+                </button>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gap: "16px",
+                }}
+              >
+                <div>
+                  <strong style={{ color: "#22c55e" }}>
+                    ❤️ What they liked most
+                  </strong>
+
+                  <p style={{ color: "#cbd5e1" }}>
+                    {item.liked || "No answer"}
+                  </p>
+                </div>
+
+                <div>
+                  <strong style={{ color: "#f97316" }}>
+                    😞 What frustrated them
+                  </strong>
+
+                  <p style={{ color: "#cbd5e1" }}>
+                    {item.frustrated || "No answer"}
+                  </p>
+                </div>
+
+                <div>
+                  <strong style={{ color: "#8b5cf6" }}>
+                    🚀 Feature requested for V2
+                  </strong>
+
+                  <p style={{ color: "#cbd5e1" }}>
+                    {item.feature || "No answer"}
+                  </p>
+                </div>
 
                 <div
                   style={{
-                    color: "#facc15",
-                    marginTop: 6,
-                    fontSize: 18,
+                    color: "#94a3b8",
+                    fontSize: "14px",
                   }}
                 >
-                  {"⭐".repeat(item.rating)}
+                  📅 {new Date(item.created_at).toLocaleDateString()}
                 </div>
-
               </div>
-
-              <button
-                onClick={() => deleteFeedback(item.id)}
-                style={{
-                  background: "#ef4444",
-                  color: "#fff",
-                  border: "none",
-                  padding: "10px 18px",
-                  borderRadius: 10,
-                  cursor: "pointer",
-                }}
-              >
-                🗑 Delete
-              </button>
             </div>
-
-            <div
-              style={{
-                display: "grid",
-                gap: 16,
-              }}
-            >
-
-              <div>
-                <strong style={{ color: "#8b5cf6" }}>
-                  ❤️ What did they like most?
-                </strong>
-
-                <p style={{ color: "#d1d5db" }}>
-                  {item.likeMost}
-                </p>
-              </div>
-
-              <div>
-                <strong style={{ color: "#8b5cf6" }}>
-                  😞 What frustrated them?
-                </strong>
-
-                <p style={{ color: "#d1d5db" }}>
-                  {item.frustrated}
-                </p>
-              </div>
-
-              <div>
-                <strong style={{ color: "#8b5cf6" }}>
-                  🚀 Feature for V2
-                </strong>
-
-                <p style={{ color: "#d1d5db" }}>
-                  {item.featureWanted}
-                </p>
-              </div>
-
-              <div>
-                <strong style={{ color: "#8b5cf6" }}>
-                  📅 Date
-                </strong>
-
-                <p style={{ color: "#d1d5db" }}>
-                  {new Date(item.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-
-            </div>
-
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </div>
   );
