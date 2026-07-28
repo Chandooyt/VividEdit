@@ -40,11 +40,15 @@ export default function FeedbackTable({
             <div
               key={item.id}
               style={{
-                background: "#111827",
-                border: "1px solid rgba(255,255,255,.08)",
-                borderRadius: "18px",
-                padding: "22px",
-              }}
+               background:
+                "linear-gradient(145deg,#171f36,#111827)",
+               border: "1px solid rgba(139,92,246,.18)",
+               borderRadius: "22px",
+               padding: "28px",
+               boxShadow:
+                 "0 0 25px rgba(139,92,246,.12)",
+               transition: ".25s",
+             }}
             >
               <div
                 style={{
@@ -56,18 +60,23 @@ export default function FeedbackTable({
               >
                 <div>
                   <h3
-                    style={{
-                      margin: 0,
-                      color: "white",
-                    }}
+                   style={{
+                     margin: 0,
+                     color: "white",
+                     fontSize: "22px",
+                     fontWeight: "700",
+                   }}
                   >
                     {item.name || "Anonymous"}
                   </h3>
 
                   <div
                     style={{
-                      color: "#facc15",
-                      marginTop: "6px",
+                      color:"#FFD43B",
+                      marginTop:"10px",
+                      fontWeight:"600",
+                      fontSize:"15px",
+
                     }}
                   >
                     ⭐ {item.rating}/5
@@ -77,12 +86,15 @@ export default function FeedbackTable({
                 <button
                   onClick={() => deleteFeedback(item.id)}
                   style={{
-                    background: "#ef4444",
-                    color: "white",
-                    border: "none",
-                    padding: "10px 18px",
-                    borderRadius: "10px",
-                    cursor: "pointer",
+                    background:
+                     "linear-gradient(135deg,#ef4444,#dc2626)",
+                    color:"white",
+                    border:"none",
+                    borderRadius:"12px",
+                    padding:"10px 18px",
+                    cursor:"pointer",
+                    fontWeight:"600",
+                    transition:".25s",
                   }}
                 >
                   Delete
@@ -92,7 +104,8 @@ export default function FeedbackTable({
               <div
                 style={{
                   display: "grid",
-                  gap: "16px",
+                  gap: "22px",
+                  marginTop:"10px",
                 }}
               >
                 <div>
@@ -100,7 +113,14 @@ export default function FeedbackTable({
                     ❤️ What they liked most
                   </strong>
 
-                  <p style={{ color: "#cbd5e1" }}>
+                 <p
+  style={{
+    color: "#cbd5e1",
+    marginTop: "8px",
+    lineHeight: "1.6",
+    fontSize: "15px",
+  }}
+>
                     {item.liked || "No answer"}
                   </p>
                 </div>
@@ -110,7 +130,14 @@ export default function FeedbackTable({
                     😞 What frustrated them
                   </strong>
 
-                  <p style={{ color: "#cbd5e1" }}>
+                  <p
+  style={{
+    color: "#cbd5e1",
+    marginTop: "8px",
+    lineHeight: "1.6",
+    fontSize: "15px",
+  }}
+>
                     {item.frustrated || "No answer"}
                   </p>
                 </div>
@@ -120,7 +147,14 @@ export default function FeedbackTable({
                     🚀 Feature requested for V2
                   </strong>
 
-                  <p style={{ color: "#cbd5e1" }}>
+                 <p
+  style={{
+    color: "#cbd5e1",
+    marginTop: "8px",
+    lineHeight: "1.6",
+    fontSize: "15px",
+  }}
+>
                     {item.feature || "No answer"}
                   </p>
                 </div>
