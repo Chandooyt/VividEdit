@@ -212,37 +212,67 @@ async def get_feedback():
 
     return feedback
 
-    @app.get("/dashboard/stats")
-    async def dashboard_stats():
 
-       db = SessionLocal()
+@app.get("/dashboard/stats")
+async def dashboard_stats():
 
-       feedback = db.query(FeedbackDB).all()
+    db = SessionLocal()
 
-       total_feedback = len(feedback)
+    feedback = db.query(FeedbackDB).all()
 
-       if total_feedback == 0:
-           average_rating = 0
-       else:
-           average_rating = round(
-               sum(item.rating for item in feedback) / total_feedback,
-               1
-           )
+    total_feedback = len(feedback)
 
-       five_star_reviews = len(
-           [item for item in feedback if item.rating == 5]
-       )
+    if total_feedback == 0:
+        average_rating = 0
+    else:
+        average_rating = round(
+            sum(item.rating for item in feedback) / total_feedback,
+            1
+        )
 
-       stats = {
-           "totalFeedback": total_feedback,
-           "averageRating": average_rating,
-           "fiveStarReviews": five_star_reviews,
-           "betaUsers": total_feedback
-       }
+    five_star_reviews = len(
+        [item for item in feedback if item.rating == 5]
+    )
 
-       db.close()
+    stats = {
+        "totalFeedback": total_feedback,
+        "averageRating": average_rating,
+        "fiveStarReviews": five_star_reviews,
+        "betaUsers": total_feedback
+    }
 
-       return stats
+    db.close()
+
+    return stats
+
+db = SessionLocal()
+
+feedback = db.query(FeedbackDB).all()
+
+total_feedback = len(feedback)
+
+if total_feedback == 0:
+    average_rating = 0
+else:
+    average_rating = round(
+        sum(item.rating for item in feedback) / total_feedback,
+            1
+        )
+
+five_star_reviews = len(
+    [item for item in feedback if item.rating == 5]
+)
+
+stats = {
+    "totalFeedback": total_feedback,
+    "averageRating": average_rating,
+    "fiveStarReviews": five_star_reviews,
+    "betaUsers": total_feedback
+}
+
+db.close()
+
+return stats
 
 
 @app.delete("/feedback/{feedback_id}")
