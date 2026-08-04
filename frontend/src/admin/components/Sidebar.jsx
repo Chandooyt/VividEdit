@@ -64,7 +64,7 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
 
-      {/* LOGO */}
+      {/* VIVID LOGO */}
 
       <div>
 
@@ -78,18 +78,17 @@ export default function Sidebar() {
             <h2>VIVID</h2>
 
             <p>
-              ADMIN
+              AI VIDEO EDITOR
             </p>
           </div>
 
         </div>
 
-        {/* MENU */}
+        {/* SIDEBAR MENU */}
 
         <div className="menu">
 
           {menu.map((item, index) => (
-
             <button
               key={index}
               className={
@@ -114,50 +113,52 @@ export default function Sidebar() {
               )}
 
             </button>
-
           ))}
 
         </div>
 
       </div>
 
-      {/* BOTTOM */}
+      {/* SIDEBAR BOTTOM */}
 
       <div className="sidebarBottom">
 
-        <div className="upgradeCard">
+        {/* FOUNDER CARD */}
 
-          <div className="upgradeIcon">
-            ◆
+        <div className="founderCard">
+
+          <div className="founderIcon">
+            V
           </div>
 
-          <h3>
-            Upgrade to Pro
-          </h3>
+          <div>
+            <h3>
+              VIVID
+            </h3>
 
-          <p>
-            Unlock all premium features
-          </p>
-
-          <button>
-            Upgrade Now →
-          </button>
+            <p>
+              Building the Agentic
+              AI video editor
+            </p>
+          </div>
 
         </div>
+
+        {/* FOUNDER PROFILE */}
 
         <div className="adminProfile">
 
           <div className="adminAvatar">
-            A
+            C
           </div>
 
           <div>
             <strong>
-              Admin
+              Chandoo
             </strong>
 
             <span>
-              Super Admin
+              CEO / Founder
             </span>
           </div>
 
@@ -167,9 +168,14 @@ export default function Sidebar() {
 
         </div>
 
+        {/* LOGOUT */}
+
         <button className="logout">
+
           <FiLogOut />
+
           Logout
+
         </button>
 
       </div>
