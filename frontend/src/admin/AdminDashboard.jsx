@@ -190,7 +190,7 @@ export default function AdminDashboard() {
 
             <div className="dashboard-left">
 
-              <AnalyticsSection />
+              <AnalyticsSection feedback={feedback} />
 
             </div>
 
