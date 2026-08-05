@@ -12,119 +12,82 @@ import {
   FiLink,
 } from "react-icons/fi";
 
-export default function Sidebar() {
+export default function Sidebar({
+  activePage = "Dashboard",
+  onNavigate = () => {},
+  onLogout = () => {},
+}) {
   const menu = [
-    {
-      icon: <FiGrid />,
-      title: "Dashboard",
-      active: true,
-    },
-    {
-      icon: <FiBarChart2 />,
-      title: "Analytics",
-    },
-    {
-      icon: <FiUsers />,
-      title: "Users",
-    },
-    {
-      icon: <FiFilm />,
-      title: "Videos",
-    },
-    {
-      icon: <FiShoppingBag />,
-      title: "Products",
-    },
-    {
-      icon: <FiCreditCard />,
-      title: "Orders",
-    },
-    {
-      icon: <FiCreditCard />,
-      title: "Transactions",
-    },
-    {
-      icon: <FiFileText />,
-      title: "Reports",
-    },
-    {
-      icon: <FiMessageSquare />,
-      title: "Messages",
-    },
-    {
-      icon: <FiSettings />,
-      title: "Settings",
-    },
-    {
-      icon: <FiLink />,
-      title: "Integrations",
-    },
+    { icon: <FiGrid />, title: "Dashboard" },
+    { icon: <FiBarChart2 />, title: "Analytics" },
+    { icon: <FiUsers />, title: "Users" },
+    { icon: <FiFilm />, title: "Videos" },
+    { icon: <FiShoppingBag />, title: "Products" },
+    { icon: <FiCreditCard />, title: "Orders" },
+    { icon: <FiCreditCard />, title: "Transactions" },
+    { icon: <FiFileText />, title: "Reports" },
+    { icon: <FiMessageSquare />, title: "Messages" },
+    { icon: <FiSettings />, title: "Settings" },
+    { icon: <FiLink />, title: "Integrations" },
   ];
 
   return (
     <aside className="sidebar">
 
       {/* VIVID LOGO */}
-
       <div>
-
         <div className="logo">
-
           <div className="logoIcon">
             V
           </div>
 
           <div>
             <h2>VIVID</h2>
-
-            <p>
-              AI VIDEO EDITOR
-            </p>
+            <p>AI VIDEO EDITOR</p>
           </div>
-
         </div>
 
-        {/* SIDEBAR MENU */}
-
+        {/* MENU */}
         <div className="menu">
 
-          {menu.map((item, index) => (
-            <button
-              key={index}
-              className={
-                item.active
-                  ? "menuItem active"
-                  : "menuItem"
-              }
-            >
+          {menu.map((item) => {
+            const isActive = activePage === item.title;
 
-              <span className="menuIcon">
-                {item.icon}
-              </span>
-
-              <span>
-                {item.title}
-              </span>
-
-              {item.title === "Messages" && (
-                <span className="menuBadge">
-                  5
+            return (
+              <button
+                key={item.title}
+                type="button"
+                className={
+                  isActive
+                    ? "menuItem active"
+                    : "menuItem"
+                }
+                onClick={() => onNavigate(item.title)}
+              >
+                <span className="menuIcon">
+                  {item.icon}
                 </span>
-              )}
 
-            </button>
-          ))}
+                <span>
+                  {item.title}
+                </span>
+
+                {item.title === "Messages" && (
+                  <span className="menuBadge">
+                    5
+                  </span>
+                )}
+              </button>
+            );
+          })}
 
         </div>
-
       </div>
 
-      {/* SIDEBAR BOTTOM */}
-
+      {/* BOTTOM */}
       <div className="sidebarBottom">
 
         {/* FOUNDER CARD */}
-
         <div className="founderCard">
 
           <div className="founderIcon">
@@ -132,9 +95,7 @@ export default function Sidebar() {
           </div>
 
           <div>
-            <h3>
-              VIVID
-            </h3>
+            <h3>VIVID</h3>
 
             <p>
               Building the Agentic
@@ -145,8 +106,11 @@ export default function Sidebar() {
         </div>
 
         {/* FOUNDER PROFILE */}
-
-        <div className="adminProfile">
+        <button
+          type="button"
+          className="adminProfile"
+          onClick={() => onNavigate("Profile")}
+        >
 
           <div className="adminAvatar">
             C
@@ -166,16 +130,16 @@ export default function Sidebar() {
             ›
           </span>
 
-        </div>
+        </button>
 
         {/* LOGOUT */}
-
-        <button className="logout">
-
+        <button
+          type="button"
+          className="logout"
+          onClick={onLogout}
+        >
           <FiLogOut />
-
           Logout
-
         </button>
 
       </div>
