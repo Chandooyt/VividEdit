@@ -7,6 +7,7 @@ import AnalyticsSection from "./components/AnalyticsSection";
 import RecentActivity from "./components/RecentActivity";
 import FeedbackTable from "./components/FeedbackTable";
 import UsersSection from "./components/UsersSection";
+import VideosSection from "./components/VideosSection";
 
 import "./styles/dashboard.css";
 
@@ -220,6 +221,9 @@ if (activePage === "Users") {
   return <UsersSection />;
 }
 
+if (activePage === "Videos") {
+  return <VideosSection />;
+}
 
     // -------------------------------------------------------
     // OTHER PAGES
