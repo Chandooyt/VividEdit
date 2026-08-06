@@ -8,6 +8,7 @@ import RecentActivity from "./components/RecentActivity";
 import FeedbackTable from "./components/FeedbackTable";
 import UsersSection from "./components/UsersSection";
 import VideosSection from "./components/VideosSection";
+import AnalyticsPage from "./components/AnalyticsPage";
 
 import "./styles/dashboard.css";
 
@@ -219,6 +220,10 @@ export default function AdminDashboard() {
 
 if (activePage === "Users") {
   return <UsersSection />;
+}
+
+if (activePage === "Analytics") {
+  return <AnalyticsPage feedback={feedback} />;
 }
 
 if (activePage === "Analytics") {
