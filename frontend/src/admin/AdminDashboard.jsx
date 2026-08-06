@@ -6,6 +6,7 @@ import DashboardCards from "./components/DashboardCards";
 import AnalyticsSection from "./components/AnalyticsSection";
 import RecentActivity from "./components/RecentActivity";
 import FeedbackTable from "./components/FeedbackTable";
+import UsersSection from "./components/UsersSection";
 
 import "./styles/dashboard.css";
 
@@ -160,7 +161,7 @@ export default function AdminDashboard() {
             fontSize: "18px",
           }}
         >
-          Loading VIVID Dashboard...
+          Loading Billion Startup VIVID Dashboard...
         </div>
 
       </div>
@@ -209,6 +210,15 @@ export default function AdminDashboard() {
         </>
       );
     }
+
+
+    // -------------------------------------------------------
+// USERS
+// -------------------------------------------------------
+
+if (activePage === "Users") {
+  return <UsersSection />;
+}
 
 
     // -------------------------------------------------------
