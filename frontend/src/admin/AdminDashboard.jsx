@@ -221,6 +221,10 @@ if (activePage === "Users") {
   return <UsersSection />;
 }
 
+if (activePage === "Analytics") {
+  return <AnalyticsSection feedback={feedback} />;
+}
+
 if (activePage === "Videos") {
   return <VideosSection />;
 }
