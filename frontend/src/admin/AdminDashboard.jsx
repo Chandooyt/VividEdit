@@ -9,6 +9,7 @@ import FeedbackTable from "./components/FeedbackTable";
 import UsersSection from "./components/UsersSection";
 import VideosSection from "./components/VideosSection";
 import AnalyticsPage from "./components/AnalyticsPage";
+import ProductsSection from "./components/ProductsSection";
 
 import "./styles/dashboard.css";
 
@@ -232,6 +233,10 @@ if (activePage === "Analytics") {
 
 if (activePage === "Videos") {
   return <VideosSection />;
+}
+
+if (activePage === "Products") {
+  return <ProductsSection />;
 }
 
     // -------------------------------------------------------
