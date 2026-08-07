@@ -1,14 +1,26 @@
-from sqlalchemy import create_engine, Column, Integer, String, DateTime
+from sqlalchemy import (
+    create_engine,
+    Column,
+    Integer,
+    String,
+    DateTime,
+)
 from sqlalchemy.orm import declarative_base, sessionmaker
 from datetime import datetime
 
+
+# =========================================================
+# DATABASE
+# =========================================================
 
 DATABASE_URL = "sqlite:///./vivid_feedback.db"
 
 
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False}
+    connect_args={
+        "check_same_thread": False
+    }
 )
 
 
@@ -22,6 +34,10 @@ SessionLocal = sessionmaker(
 Base = declarative_base()
 
 
+# =========================================================
+# FEEDBACK
+# =========================================================
+
 class FeedbackDB(Base):
 
     __tablename__ = "feedback"
@@ -33,19 +49,23 @@ class FeedbackDB(Base):
     )
 
     rating = Column(
-        Integer
+        Integer,
+        nullable=False
     )
 
     liked = Column(
-        String
+        String,
+        nullable=True
     )
 
     frustrated = Column(
-        String
+        String,
+        nullable=True
     )
 
     feature = Column(
-        String
+        String,
+        nullable=True
     )
 
     created_at = Column(
@@ -53,6 +73,55 @@ class FeedbackDB(Base):
         default=datetime.now
     )
 
+
+# =========================================================
+# PRODUCTS / SUBSCRIPTIONS
+# =========================================================
+
+class ProductDB(Base):
+
+    __tablename__ = "products"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    name = Column(
+        String,
+        nullable=False
+    )
+
+    description = Column(
+        String,
+        nullable=True
+    )
+
+    price = Column(
+        String,
+        nullable=False
+    )
+
+    status = Column(
+        String,
+        default="Active"
+    )
+
+    users = Column(
+        Integer,
+        default=0
+    )
+
+    created_at = Column(
+        DateTime,
+        default=datetime.now
+    )
+
+
+# =========================================================
+# CREATE TABLES
+# =========================================================
 
 Base.metadata.create_all(
     bind=engine
