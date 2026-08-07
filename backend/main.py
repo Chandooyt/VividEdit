@@ -16,6 +16,8 @@ from database import SessionLocal, FeedbackDB
 
 from datetime import datetime
 
+from database import SessionLocal, FeedbackDB, ProductDB
+
 # ── Setup ──────────────────────────────────────────────────────
 app = FastAPI(title="VIVID Upload API")
 from fastapi.staticfiles import StaticFiles
