@@ -3,37 +3,36 @@ import shutil
 import threading
 import time
 from pathlib import Path
+from datetime import datetime
 
 from fastapi import FastAPI, File, HTTPException, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-
 from pydantic import BaseModel
 
 from process_video import process_video
-from database import SessionLocal, FeedbackDB
-
-from datetime import datetime
-
 from database import SessionLocal, FeedbackDB, ProductDB
 
-# ── Setup ──────────────────────────────────────────────────────
+
+# =========================================================
+# APP SETUP
+# =========================================================
+
 app = FastAPI(title="VIVID Upload API")
-from fastapi.staticfiles import StaticFiles
 
-app.mount(
-    "/processed",
-    StaticFiles(directory="processed"),
-    name="processed"
-)
 
-UPLOAD_DIR    = Path("uploads")
+UPLOAD_DIR = Path("uploads")
 PROCESSED_DIR = Path("processed")
-UPLOAD_DIR.mkdir(exist_ok=True)     # creates uploads/   if missing
-PROCESSED_DIR.mkdir(exist_ok=True)  # creates processed/ if missing
 
-# ── CORS — allows the React frontend (any localhost port) to call this API ──
+UPLOAD_DIR.mkdir(exist_ok=True)
+PROCESSED_DIR.mkdir(exist_ok=True)
+
+
+# =========================================================
+# CORS
+# =========================================================
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -42,9 +41,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Serve processed/ folder as static files so the browser can download them ──
-# Accessing http://127.0.0.1:8000/processed/video_vivid.mp4 will stream the file.
-app.mount("/processed", StaticFiles(directory="processed"), name="processed")
+
+# =========================================================
+# STATIC PROCESSED VIDEOS
+# =========================================================
+
+app.mount(
+    "/processed",
+    StaticFiles(directory="processed"),
+    name="processed",
+)
+
+
+# =========================================================
+# MODELS
+# =========================================================
 
 class Feedback(BaseModel):
     rating: int
@@ -53,11 +64,38 @@ class Feedback(BaseModel):
     feature: str
 
 
-# ── Routes ─────────────────────────────────────────────────────
+class ProductCreate(BaseModel):
+    name: str
+    description: str = ""
+    price: str
+    status: str = "Active"
+    users: int = 0
+
+
+class ProductUpdate(BaseModel):
+    name: str
+    description: str = ""
+    price: str
+    status: str = "Active"
+    users: int = 0
+
+
+# =========================================================
+# ROOT
+# =========================================================
+
 @app.get("/")
 def root():
-    return {"status": "ok", "message": "VIVID API is running"}
 
+    return {
+        "status": "ok",
+        "message": "VIVID API is running"
+    }
+
+
+# =========================================================
+# VIDEO UPLOAD
+# =========================================================
 
 @app.post("/upload")
 async def upload_video(
@@ -65,41 +103,110 @@ async def upload_video(
     prompt: str = Form("")
 ):
 
-    # ── 1. Validate file type ───────────────────────────────────
-    if file.content_type not in ("video/mp4", "video/mpeg"):
+    # -----------------------------------------------------
+    # 1. VALIDATE FILE TYPE
+    # -----------------------------------------------------
+
+    allowed_types = (
+        "video/mp4",
+        "video/mpeg",
+        "video/quicktime",
+        "video/x-matroska",
+        "video/x-msvideo",
+    )
+
+    if file.content_type not in allowed_types:
+
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid file type '{file.content_type}'. Only MP4 files are accepted.",
+            detail=(
+                f"Invalid file type '{file.content_type}'. "
+                "Supported formats: MP4, MOV, MKV, AVI."
+            ),
         )
 
-    # ── 2. Save uploaded file to disk ──────────────────────────
-    safe_name = Path(file.filename).name   # strip any directory traversal
-    dest      = UPLOAD_DIR / safe_name
+
+    # -----------------------------------------------------
+    # 2. SAVE UPLOAD
+    # -----------------------------------------------------
+
+    safe_name = Path(
+        file.filename or "uploaded_video.mp4"
+    ).name
+
+    dest = UPLOAD_DIR / safe_name
+
 
     try:
+
         with dest.open("wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+
+            shutil.copyfileobj(
+                file.file,
+                buffer
+            )
+
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Could not save file: {exc}")
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Could not save file: {exc}"
+        )
+
     finally:
+
         await file.close()
 
-    file_size_mb = round(dest.stat().st_size / (1024 * 1024), 2)
-    if file_size_mb > 100:
 
-        os.remove(dest)
+    # -----------------------------------------------------
+    # 3. FILE SIZE
+    # -----------------------------------------------------
+
+    file_size_mb = round(
+        dest.stat().st_size /
+        (1024 * 1024),
+        2
+    )
+
+
+    # Current limit
+    MAX_FILE_SIZE_MB = 1024
+
+
+    if file_size_mb > MAX_FILE_SIZE_MB:
+
+        try:
+            os.remove(dest)
+        except Exception:
+            pass
 
         return JSONResponse(
             status_code=400,
             content={
                 "success": False,
-                "message": "Video too large. Max 100MB."
+                "message": (
+                    "Video too large. "
+                    "Maximum file size is 1024MB."
+                )
             }
         )
-    print(f"[VIVID] Saved upload: {dest} ({file_size_mb} MB)")
 
-    # ── 3. Run FFmpeg silence-removal processor ─────────────────
-    print(f"[VIVID] Starting processor for: {dest}")
+
+    print(
+        f"[VIVID] Saved upload: "
+        f"{dest} ({file_size_mb} MB)"
+    )
+
+
+    # -----------------------------------------------------
+    # 4. PROCESS VIDEO
+    # -----------------------------------------------------
+
+    print(
+        f"[VIVID] Starting processor for: {dest}"
+    )
+
+
     try:
 
         processing_result = process_video(
@@ -109,7 +216,18 @@ async def upload_video(
 
     except Exception as e:
 
-        print(f"[UPLOAD ERROR] {e}")
+        print(
+            f"[UPLOAD ERROR] {e}"
+        )
+
+        try:
+
+            if os.path.exists(dest):
+                os.remove(dest)
+
+        except Exception:
+            pass
+
 
         return JSONResponse(
             status_code=500,
@@ -119,22 +237,40 @@ async def upload_video(
             }
         )
 
-    # DELETE UPLOADED FILE AFTER PROCESSING
+
+    # -----------------------------------------------------
+    # 5. DELETE ORIGINAL UPLOAD
+    # -----------------------------------------------------
+
     try:
+
         if os.path.exists(dest):
+
             os.remove(dest)
-            print(f"[VIVID AI] Deleted upload file → {dest}")
+
+            print(
+                f"[VIVID AI] Deleted upload → {dest}"
+            )
 
     except Exception as e:
-        print(f"[VIVID AI] Failed to delete upload → {e}")
-    print(f"[VIVID] Processor result: {processing_result}")
 
-    # ── 4. Build the download path the frontend will use ────────
-    # processor.py saves to e.g. "processed/video_vivid.mp4"
-    # We expose that as a URL: http://127.0.0.1:8000/processed/video_vivid.mp4
-      # ── 4. Build processed video URL ─────────────────────
+        print(
+            f"[VIVID AI] Failed to delete upload → {e}"
+        )
+
+
+    print(
+        f"[VIVID] Processor result: "
+        f"{processing_result}"
+    )
+
+
+    # -----------------------------------------------------
+    # 6. BUILD PROCESSED VIDEO URL
+    # -----------------------------------------------------
 
     processed_video = ""
+
 
     if (
         processing_result.get("success")
@@ -145,136 +281,460 @@ async def upload_video(
             processing_result["output_path"]
         ).name
 
+
         processed_video = (
             f"/processed/{output_name}"
         )
 
+
         print(
-            f"[VIVID AI] Processed Video URL → {processed_video}"
+            "[VIVID AI] Processed Video URL → "
+            f"{processed_video}"
         )
 
-        # AUTO DELETE AFTER 1 HOUR
+
+        # Auto-delete after 1 hour
         auto_delete_processed(
             processing_result["output_path"],
             3600
         )
 
-    # ── 5. Return combined JSON response ────────────────────────
+
+    # -----------------------------------------------------
+    # 7. RETURN RESPONSE
+    # -----------------------------------------------------
+
     return JSONResponse(
         status_code=200,
         content={
-            # Upload info
-            "success":    True,
-            "message":    processing_result.get("message", "File uploaded successfully"),
-            "filename":   safe_name,
-            "saved_to":   str(dest),
-            "size_mb":    file_size_mb,
 
-            # Processor info (used by the frontend download button)
-            "processed_video": processed_video,   # e.g. "processed/video_vivid.mp4"
-            "processing": processing_result,       # full processor dict for debugging
+            "success": True,
+
+            "message":
+                processing_result.get(
+                    "message",
+                    "File processed successfully"
+                ),
+
+            "filename":
+                safe_name,
+
+            "size_mb":
+                file_size_mb,
+
+            "processed_video":
+                processed_video,
+
+            "processing":
+                processing_result,
         },
     )
+
+
+# =========================================================
+# FEEDBACK
+# =========================================================
 
 @app.post("/feedback")
 async def save_feedback(data: Feedback):
 
     db = SessionLocal()
 
-    feedback = FeedbackDB(
-        rating=data.rating,
-        liked=data.liked,
-        frustrated=data.frustrated,
-        feature=data.feature
-    )
+    try:
 
-    db.add(feedback)
+        feedback = FeedbackDB(
+            rating=data.rating,
+            liked=data.liked,
+            frustrated=data.frustrated,
+            feature=data.feature
+        )
 
-    db.commit()
+        db.add(feedback)
+        db.commit()
+        db.refresh(feedback)
 
-    db.close()
+        return {
+            "success": True,
+            "message":
+                "Thanks for being a VIVID Beta Tester!"
+        }
 
-    return {
-        "success": True,
-        "message": "Thanks for being a VIVID Beta Tester!"
-    }
+    finally:
+
+        db.close()
+
+
+# =========================================================
+# GET FEEDBACK
+# =========================================================
 
 @app.get("/feedback")
 async def get_feedback():
 
     db = SessionLocal()
 
-    feedback = (
-        db.query(FeedbackDB)
-        .order_by(FeedbackDB.created_at.desc())
-        .all()
-    )
+    try:
 
-    db.close()
-
-    return feedback
-
-
-@app.get("/dashboard/stats")
-async def dashboard_stats():
-
-    db = SessionLocal()
-
-    feedback = db.query(FeedbackDB).all()
-
-    total_feedback = len(feedback)
-
-    if total_feedback == 0:
-        average_rating = 0
-    else:
-        average_rating = round(
-            sum(item.rating for item in feedback) / total_feedback,
-            1
+        feedback = (
+            db.query(FeedbackDB)
+            .order_by(
+                FeedbackDB.created_at.desc()
+            )
+            .all()
         )
 
-    five_star_reviews = len(
-        [item for item in feedback if item.rating == 5]
-    )
+        return feedback
 
-    stats = {
-        "totalFeedback": total_feedback,
-        "averageRating": average_rating,
-        "fiveStarReviews": five_star_reviews,
-        "betaUsers": total_feedback
-    }
+    finally:
 
-    db.close()
+        db.close()
 
-    return stats
+
+# =========================================================
+# DELETE FEEDBACK
+# =========================================================
 
 @app.delete("/feedback/{feedback_id}")
 async def delete_feedback(feedback_id: int):
 
     db = SessionLocal()
 
-    feedback = (
-        db.query(FeedbackDB)
-        .filter(FeedbackDB.id == feedback_id)
-        .first()
-    )
+    try:
 
-    if feedback is None:
-        db.close()
-        raise HTTPException(
-            status_code=404,
-            detail="Feedback not found"
+        feedback = (
+            db.query(FeedbackDB)
+            .filter(
+                FeedbackDB.id == feedback_id
+            )
+            .first()
         )
 
-    db.delete(feedback)
-    db.commit()
-    db.close()
 
-    return {
-        "success": True,
-        "message": "Feedback deleted"
-    }
-    
-# ── AUTO DELETE PROCESSED VIDEOS ─────────────────────────────
+        if feedback is None:
+
+            raise HTTPException(
+                status_code=404,
+                detail="Feedback not found"
+            )
+
+
+        db.delete(feedback)
+        db.commit()
+
+
+        return {
+            "success": True,
+            "message": "Feedback deleted"
+        }
+
+    finally:
+
+        db.close()
+
+
+# =========================================================
+# DASHBOARD STATS
+# =========================================================
+
+@app.get("/dashboard/stats")
+async def dashboard_stats():
+
+    db = SessionLocal()
+
+    try:
+
+        feedback = (
+            db.query(FeedbackDB)
+            .all()
+        )
+
+
+        total_feedback = len(
+            feedback
+        )
+
+
+        if total_feedback == 0:
+
+            average_rating = 0
+
+        else:
+
+            average_rating = round(
+                sum(
+                    item.rating
+                    for item in feedback
+                )
+                / total_feedback,
+                1
+            )
+
+
+        five_star_reviews = len(
+            [
+                item
+                for item in feedback
+                if item.rating == 5
+            ]
+        )
+
+
+        return {
+
+            "totalFeedback":
+                total_feedback,
+
+            "averageRating":
+                average_rating,
+
+            "fiveStarReviews":
+                five_star_reviews,
+
+            "betaUsers":
+                total_feedback,
+        }
+
+    finally:
+
+        db.close()
+
+
+# =========================================================
+# PRODUCTS
+# =========================================================
+
+@app.get("/products")
+async def get_products():
+
+    db = SessionLocal()
+
+    try:
+
+        products = (
+            db.query(ProductDB)
+            .order_by(
+                ProductDB.id.asc()
+            )
+            .all()
+        )
+
+
+        # Create the five VIVID plans
+        # automatically if the database is empty.
+
+        if not products:
+
+            default_products = [
+
+                ProductDB(
+                    name="Free Users",
+                    description=
+                        "Basic VIVID AI video editing",
+                    price="$0",
+                    status="Active",
+                    users=0,
+                ),
+
+                ProductDB(
+                    name="Pro Users",
+                    description=
+                        "Advanced AI editing tools",
+                    price="$19",
+                    status="Active",
+                    users=0,
+                ),
+
+                ProductDB(
+                    name="Creators",
+                    description=
+                        "Advanced creator workflow and AI tools",
+                    price="$39",
+                    status="Active",
+                    users=0,
+                ),
+
+                ProductDB(
+                    name="Agencies",
+                    description=
+                        "Team collaboration and agency workflows",
+                    price="$99",
+                    status="Coming Soon",
+                    users=0,
+                ),
+
+                ProductDB(
+                    name="Companies",
+                    description=
+                        "Enterprise AI video editing and automation",
+                    price="Custom",
+                    status="Coming Soon",
+                    users=0,
+                ),
+            ]
+
+
+            db.add_all(
+                default_products
+            )
+
+            db.commit()
+
+
+            products = (
+                db.query(ProductDB)
+                .order_by(
+                    ProductDB.id.asc()
+                )
+                .all()
+            )
+
+
+        return products
+
+    finally:
+
+        db.close()
+
+
+# =========================================================
+# CREATE PRODUCT
+# =========================================================
+
+@app.post("/products")
+async def create_product(
+    data: ProductCreate
+):
+
+    db = SessionLocal()
+
+    try:
+
+        product = ProductDB(
+            name=data.name,
+            description=data.description,
+            price=data.price,
+            status=data.status,
+            users=data.users,
+        )
+
+
+        db.add(product)
+        db.commit()
+        db.refresh(product)
+
+
+        return {
+            "success": True,
+            "message": "Product created",
+            "product": product,
+        }
+
+    finally:
+
+        db.close()
+
+
+# =========================================================
+# UPDATE PRODUCT
+# =========================================================
+
+@app.put("/products/{product_id}")
+async def update_product(
+    product_id: int,
+    data: ProductUpdate
+):
+
+    db = SessionLocal()
+
+    try:
+
+        product = (
+            db.query(ProductDB)
+            .filter(
+                ProductDB.id == product_id
+            )
+            .first()
+        )
+
+
+        if product is None:
+
+            raise HTTPException(
+                status_code=404,
+                detail="Product not found"
+            )
+
+
+        product.name = data.name
+        product.description = data.description
+        product.price = data.price
+        product.status = data.status
+        product.users = data.users
+
+
+        db.commit()
+        db.refresh(product)
+
+
+        return {
+            "success": True,
+            "message": "Product updated",
+            "product": product,
+        }
+
+    finally:
+
+        db.close()
+
+
+# =========================================================
+# DELETE PRODUCT
+# =========================================================
+
+@app.delete("/products/{product_id}")
+async def delete_product(
+    product_id: int
+):
+
+    db = SessionLocal()
+
+    try:
+
+        product = (
+            db.query(ProductDB)
+            .filter(
+                ProductDB.id == product_id
+            )
+            .first()
+        )
+
+
+        if product is None:
+
+            raise HTTPException(
+                status_code=404,
+                detail="Product not found"
+            )
+
+
+        db.delete(product)
+        db.commit()
+
+
+        return {
+            "success": True,
+            "message": "Product deleted"
+        }
+
+    finally:
+
+        db.close()
+
+
+# =========================================================
+# AUTO DELETE PROCESSED VIDEOS
+# =========================================================
+
 def auto_delete_processed(
     file_path: str,
     delay_seconds: int = 3600
@@ -282,34 +742,56 @@ def auto_delete_processed(
 
     def delete_file():
 
-        time.sleep(delay_seconds)
+        time.sleep(
+            delay_seconds
+        )
+
 
         try:
 
-            if os.path.exists(file_path):
+            if os.path.exists(
+                file_path
+            ):
 
-                os.remove(file_path)
+                os.remove(
+                    file_path
+                )
+
 
                 print(
-                    f"[VIVID AI] Auto-deleted processed → {file_path}"
+                    "[VIVID AI] "
+                    "Auto-deleted processed → "
+                    f"{file_path}"
                 )
 
         except Exception as e:
 
             print(
-                f"[VIVID AI] Auto-delete failed → {e}"
+                "[VIVID AI] "
+                "Auto-delete failed → "
+                f"{e}"
             )
+
 
     thread = threading.Thread(
         target=delete_file
     )
 
     thread.daemon = True
-
     thread.start()
 
-# ── Run ────────────────────────────────────────────────────────
-# Start with:  uvicorn main:app --reload
+
+# =========================================================
+# RUN
+# =========================================================
+
 if __name__ == "__main__":
+
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True
+    )
